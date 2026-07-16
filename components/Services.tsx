@@ -1,54 +1,33 @@
-const services = [
-  {
-    iconBg: 'rgba(37,99,235,0.1)',
-    iconColor: '#3b82f6',
-    icon: 'fa-solid fa-code',
-    title: 'Web Design',
-    desc: 'Pembuatan website responsif menggunakan PHP, Python, dan Kotlin dengan standar performa tinggi.',
-  },
-  {
-    iconBg: 'rgba(16,185,129,0.1)',
-    iconColor: '#10b981',
-    icon: 'fa-solid fa-chart-line',
-    title: 'SEO Expert',
-    desc: 'Optimasi kecepatan dan struktur data untuk menempati halaman pertama Google secara organik.',
-  },
-  {
-    iconBg: 'rgba(109,40,217,0.1)',
-    iconColor: '#8b5cf6',
-    icon: 'fa-solid fa-server',
-    title: 'VPS Setup',
-    desc: 'Konfigurasi Ubuntu/Debian di Azure, DigitalOcean, atau AWS dengan keamanan berlapis.',
-  },
-  {
-    iconBg: 'rgba(239,68,68,0.1)',
-    iconColor: '#ef4444',
-    icon: 'fa-solid fa-network-wired',
-    title: 'Server Management',
-    desc: 'Manajemen cPanel, Docker Registry, dan keamanan direktori server secara profesional.',
-  },
+'use client'
+
+import { useLanguage } from '@/lib/i18n'
+
+const meta = [
+  { iconBg: 'rgba(37,99,235,0.1)', iconColor: '#3b82f6', icon: 'fa-solid fa-code' },
+  { iconBg: 'rgba(16,185,129,0.1)', iconColor: '#10b981', icon: 'fa-solid fa-chart-line' },
+  { iconBg: 'rgba(109,40,217,0.1)', iconColor: '#8b5cf6', icon: 'fa-solid fa-server' },
+  { iconBg: 'rgba(239,68,68,0.1)', iconColor: '#ef4444', icon: 'fa-solid fa-network-wired' },
 ]
 
 const delays = ['', ' reveal-d1', ' reveal-d2', ' reveal-d3']
 
 export default function Services() {
+  const { t } = useLanguage()
+
   return (
     <section id="layanan">
       <div className="section-wrap">
         <div className="section-header reveal">
-          <div className="section-label">Keahlian</div>
-          <h2 className="section-title">Solusi Teknis End-to-End</h2>
-          <p className="section-sub">Dari desain antarmuka hingga deployment infrastruktur cloud.</p>
+          <div className="section-label">{t.services.label}</div>
+          <h2 className="section-title">{t.services.title}</h2>
+          <p className="section-sub">{t.services.sub}</p>
         </div>
 
         <div className="services-grid">
-          {services.map((s, i) => (
+          {t.services.cards.map((s, i) => (
             <div className={`service-card reveal${delays[i]}`} key={i}>
-              <div
-                className="service-icon"
-                style={{ background: s.iconBg }}
-              >
-                <i className={s.icon} style={{ color: s.iconColor }} />
+              <div className="service-icon" style={{ background: meta[i].iconBg }}>
+                <i className={meta[i].icon} style={{ color: meta[i].iconColor }} />
               </div>
               <h3>{s.title}</h3>
               <p>{s.desc}</p>

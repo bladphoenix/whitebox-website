@@ -1,18 +1,22 @@
+'use client'
+
+import { useLanguage } from '@/lib/i18n'
+
 export default function Contact() {
+  const { t } = useLanguage()
+  const c = t.contact
+
   return (
     <section id="kontak">
       <div className="section-wrap">
         <div className="contact-inner reveal">
           <div className="section-label" style={{ display: 'block', textAlign: 'center' }}>
-            Kontak
+            {c.label}
           </div>
           <h2 className="contact-title">
-            Siap Mulai<br />Proyek Anda?
+            {c.titleLine1}<br />{c.titleLine2}
           </h2>
-          <p className="contact-sub">
-            Hubungi kami langsung untuk cek stok domain, konsultasi infrastruktur, atau
-            pendaftaran kursus webshell.
-          </p>
+          <p className="contact-sub">{c.sub}</p>
 
           <div className="contact-btns">
             <a
@@ -35,7 +39,7 @@ export default function Contact() {
 
           <div className="contact-avail">
             <span className="avail-dot" />
-            <span>Tersedia Senin–Sabtu, 09.00–21.00 WIB</span>
+            <span>{c.availability}</span>
           </div>
         </div>
       </div>

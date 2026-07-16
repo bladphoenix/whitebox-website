@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { useLanguage } from '@/lib/i18n'
 
 export default function Navbar() {
+  const { t, lang, setLang } = useLanguage()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
@@ -55,12 +57,30 @@ export default function Navbar() {
 
           <div className="nav-right">
             <ul className="nav-links">
-              <li><a href="#beranda">Beranda</a></li>
-              <li><a href="#layanan">Layanan</a></li>
-              <li><a href="#portofolio">Portofolio</a></li>
-              <li><a href="#harga">Harga</a></li>
-              <li><a href="#kontak" className="nav-cta">Hubungi Saya</a></li>
+              <li><a href="#beranda">{t.nav.home}</a></li>
+              <li><a href="#layanan">{t.nav.services}</a></li>
+              <li><a href="#portofolio">{t.nav.portfolio}</a></li>
+              <li><a href="#harga">{t.nav.pricing}</a></li>
+              <li><a href="#testimoni">{t.nav.testimonials}</a></li>
+              <li><a href="#kontak" className="nav-cta">{t.nav.cta}</a></li>
             </ul>
+
+            <div className="lang-switch" role="group" aria-label="Language / Bahasa">
+              <button
+                className={lang === 'id' ? 'active' : ''}
+                onClick={() => setLang('id')}
+                aria-pressed={lang === 'id'}
+              >
+                ID
+              </button>
+              <button
+                className={lang === 'en' ? 'active' : ''}
+                onClick={() => setLang('en')}
+                aria-pressed={lang === 'en'}
+              >
+                EN
+              </button>
+            </div>
 
             <button
               className="theme-toggle"
@@ -85,11 +105,30 @@ export default function Navbar() {
 
       {/* Mobile Nav Overlay */}
       <div className={`mobile-nav${menuOpen ? ' open' : ''}`}>
-        <a href="#beranda" onClick={closeNav}>Beranda</a>
-        <a href="#layanan" onClick={closeNav}>Layanan</a>
-        <a href="#portofolio" onClick={closeNav}>Portofolio</a>
-        <a href="#harga" onClick={closeNav}>Harga</a>
-        <a href="#kontak" onClick={closeNav}>Kontak</a>
+        <a href="#beranda" onClick={closeNav}>{t.nav.home}</a>
+        <a href="#layanan" onClick={closeNav}>{t.nav.services}</a>
+        <a href="#portofolio" onClick={closeNav}>{t.nav.portfolio}</a>
+        <a href="#harga" onClick={closeNav}>{t.nav.pricing}</a>
+        <a href="#testimoni" onClick={closeNav}>{t.nav.testimonials}</a>
+        <a href="#kontak" onClick={closeNav}>{t.nav.contact}</a>
+
+        {/* Penukar bahasa khusus mobile (di navbar disembunyikan agar tidak sesak) */}
+        <div className="lang-switch mobile-lang" role="group" aria-label="Language / Bahasa">
+          <button
+            className={lang === 'id' ? 'active' : ''}
+            onClick={() => setLang('id')}
+            aria-pressed={lang === 'id'}
+          >
+            ID
+          </button>
+          <button
+            className={lang === 'en' ? 'active' : ''}
+            onClick={() => setLang('en')}
+            aria-pressed={lang === 'en'}
+          >
+            EN
+          </button>
+        </div>
       </div>
     </>
   )

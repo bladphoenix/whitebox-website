@@ -1,43 +1,40 @@
+'use client'
+
 import Image from 'next/image'
+import { useLanguage } from '@/lib/i18n'
 
 export default function Hero() {
+  const { t } = useLanguage()
+  const h = t.hero
+
   return (
     <section id="beranda">
       <div className="hero-inner section-wrap">
         {/* Left – copy */}
         <div>
-          <div className="hero-badge reveal">Freelance Specialist</div>
+          <div className="hero-badge reveal">{h.badge}</div>
 
           <h1 className="hero-title reveal reveal-d1">
-            Bangun Website<br />Cepat &<br />
-            <span className="gradient-text">Server Stabil.</span>
+            {h.titleTop}<br />
+            <span className="gradient-text">{h.titleAccent}</span>
           </h1>
 
-          <p className="hero-sub reveal reveal-d2">
-            Kami dari Whitebox.asia — spesialis yang fokus pada performa web, optimasi
-            SEO, dan manajemen infrastruktur cloud yang aman dan skalabel.
-          </p>
+          <p className="hero-sub reveal reveal-d2">{h.sub}</p>
 
           <div className="hero-actions reveal reveal-d3">
             <a href="#portofolio" className="btn-primary">
-              <i className="fa-solid fa-arrow-right" /> Lihat Proyek
+              <i className="fa-solid fa-arrow-right" /> {h.btnPrimary}
             </a>
-            <a href="#layanan" className="btn-ghost">Layanan Saya</a>
+            <a href="#layanan" className="btn-ghost">{h.btnGhost}</a>
           </div>
 
           <div className="hero-stats reveal reveal-d2">
-            <div className="stat-item">
-              <div className="stat-num">50+</div>
-              <div className="stat-label">Proyek Selesai</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-num">5yr+</div>
-              <div className="stat-label">Pengalaman</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-num">99%</div>
-              <div className="stat-label">Uptime Server</div>
-            </div>
+            {h.stats.map((s, i) => (
+              <div className="stat-item" key={i}>
+                <div className="stat-num">{s.num}</div>
+                <div className="stat-label">{s.label}</div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -58,7 +55,7 @@ export default function Hero() {
               style={{ objectFit: 'cover' }}
             />
             <div className="hero-quote">
-              <p>"Mengelola infrastruktur Cloud Container &amp; Google Cloud dengan presisi tinggi."</p>
+              <p>{h.quote}</p>
             </div>
           </div>
         </div>
