@@ -119,6 +119,11 @@ h1, h2, h3 {
 :root {
   --nav-morph-dur: 0.7s;
   --nav-morph-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Lebar wadah isi halaman. Dipakai .section-wrap dan lebar pill navbar,
+     supaya tepi pill selalu segaris dengan konten di bawahnya. */
+  --wrap-max: 1200px;
+  --wrap-pad: 24px;
 }
 
 nav {
@@ -173,12 +178,13 @@ body.lightbox-open #navbar { opacity: 0; pointer-events: none; }
 }
 
 nav.scrolled .nav-inner {
-  /* Susut tipis saja dari wujud aslinya (75px / 1200px) — cukup untuk terasa
-     berubah, tanpa membuat pill terlihat kerdil. Angka pasti, bukan fit-content,
-     supaya penyusutannya bisa dianimasikan. */
+  /* Tinggi susut tipis saja dari 75px. Lebarnya dibuat persis selebar isi
+     .section-wrap (1200px dikurangi padding kiri-kanan), sehingga tepi pill
+     lurus dengan tepi kartu di bawahnya. Bukan fit-content, supaya bisa
+     dianimasikan. */
   height: 68px;
-  max-width: 1100px;
-  padding: 0 16px 0 24px;
+  max-width: calc(var(--wrap-max) - var(--wrap-pad) * 2);
+  padding: 0 14px 0 22px;
   border-radius: 100px;
   background: var(--nav-scrolled);
   border-color: var(--border);
@@ -510,7 +516,7 @@ h1.hero-title {
 
 /* ─── SECTION SHARED ──────────────────── */
 section { position: relative; z-index: 2; transition: background 0.4s; }
-.section-wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.section-wrap { max-width: var(--wrap-max); margin: 0 auto; padding: 0 var(--wrap-pad); }
 .section-header { margin-bottom: 60px; }
 .section-label {
   display: inline-block; font-size: 0.75rem; font-weight: 600;
