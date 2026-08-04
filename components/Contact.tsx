@@ -20,7 +20,7 @@ export default function Contact() {
 
           <div className="contact-btns">
             <a
-              href="https://wa.me/6287821381136"
+              href="https://wa.me/62859191749378"
               target="_blank"
               rel="noopener noreferrer"
               className="contact-btn btn-wa"
