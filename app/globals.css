@@ -553,7 +553,114 @@ section { position: relative; z-index: 2; transition: background 0.4s; }
 @keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
 
 /* ─── SERVICES ────────────────────────── */
-#layanan { padding: 100px 24px; }
+/* Latar GridMotion (React Bits) dipasang di dalam #layanan. Ubin tetap di
+   belakang lewat .gm z-index 0 dan isi halaman z-index 1 — dua-duanya
+   positif, supaya keduanya tetap di dalam stacking context milik `section`
+   dan ubin tidak tembus ke belakang latar halaman. */
+:root {
+  --gm-cell: rgba(19, 28, 46, 0.92);
+  --gm-cell-border: rgba(99, 155, 255, 0.16);
+  --gm-icon: rgba(139, 158, 191, 0.55);
+  --gm-img-op: 0.5;
+  --gm-op: 0.72;
+  --gm-glow: rgba(79, 139, 255, 0.16);
+  /* Warna --bg dengan alfa 0 dan 1. Ditulis eksplisit, bukan `transparent`,
+     karena `transparent` itu rgba(0,0,0,0) — di tema terang gradasinya akan
+     lewat abu-abu kotor sebelum sampai putih. */
+  --gm-fade-0: rgba(8, 12, 20, 0);
+  --gm-fade-1: rgba(8, 12, 20, 1);
+}
+[data-theme="light"] {
+  /* Di tema terang ubin harus sedikit lebih gelap dari latar halaman.
+     Kalau warnanya nyaris putih seperti --surface, petaknya hilang dan
+     yang tersisa cuma cuplikan layar melayang tanpa kisi. */
+  --gm-cell: rgba(226, 232, 240, 0.9);
+  --gm-cell-border: rgba(15, 23, 42, 0.11);
+  --gm-icon: rgba(71, 85, 105, 0.42);
+  --gm-img-op: 0.52;
+  --gm-op: 0.78;
+  --gm-glow: rgba(37, 99, 235, 0.13);
+  --gm-fade-0: rgba(248, 250, 252, 0);
+  --gm-fade-1: rgba(248, 250, 252, 1);
+}
+
+#layanan { padding: 100px 24px; position: relative; overflow: hidden; }
+#layanan > .section-wrap { position: relative; z-index: 1; }
+
+.gm {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Petak harus lebih besar dari section-nya: miring 15° dan tiap baris masih
+   bergeser ±150px mengikuti kursor, jadi tepinya wajib berada di luar
+   bingkai — kalau tidak, ujung barisnya kelihatan saat kursor di pinggir
+   layar. Ukuran minimumnya dari memutar sudut section sejauh 15°:
+
+     lebar  ≥ 0,966·lebar  + 0,259·tinggi + 300   (300 = geser ±150px)
+     tinggi ≥ 0,259·lebar  + 0,966·tinggi
+
+   Keduanya butuh suku tetap, bukan persen murni: di layar sempit section
+   ini justru paling tinggi (kartunya jadi 2 kolom) dan persen saja tidak
+   cukup, sementara di layar ultra-lebar suku 0,259·lebar yang membengkak.
+   Angka di bawah memenuhi kedua rumus dari 820px sampai 3440px, sekaligus
+   menjaga ubinnya ±20% lebar layar seperti demo aslinya. */
+.gm-grid {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(120% + 380px);
+  height: calc(105% + 28vw);
+  transform: translate(-50%, -50%) rotate(-15deg);
+  display: grid;
+  grid-template-rows: repeat(4, 1fr);
+  gap: 16px;
+  /* Redupnya dipasang di sini, bukan di .gm — kalau di .gm, .gm-fade ikut
+     teredup juga dan tepinya tidak pernah benar-benar sampai ke warna latar
+     halaman. */
+  opacity: var(--gm-op);
+  transition: opacity 0.4s;
+}
+.gm-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 16px;
+  will-change: transform;
+}
+.gm-cell {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--gm-cell);
+  border: 1px solid var(--gm-cell-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gm-img {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: 50% 0; /* kepala situs, bukan bagian tengahnya */
+  opacity: var(--gm-img-op);
+  filter: saturate(0.8); /* warnanya diredam supaya tidak melawan palet biru situs */
+}
+.gm-cell i { font-size: 2.1rem; color: var(--gm-icon); }
+
+/* Peredam: sedikit cahaya di tengah, lalu meleleh jadi warna latar halaman
+   di tepi atas & bawah — supaya petaknya tidak terlihat dipotong batas
+   section, dan judul di atasnya tetap enak dibaca. */
+.gm-fade {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(115% 85% at 50% 42%, var(--gm-glow) 0%, var(--gm-fade-0) 45%, var(--gm-fade-1) 92%),
+    linear-gradient(180deg, var(--gm-fade-1) 0%, var(--gm-fade-0) 24%, var(--gm-fade-0) 76%, var(--gm-fade-1) 100%);
+}
+
 .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
 .service-card {
   background: var(--surface); border: 1px solid var(--border);
@@ -1068,6 +1175,10 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); background: va
   .hero-stats { gap: 32px; }
 
   .services-grid { grid-template-columns: 1fr; }
+  /* Di HP kartunya menumpuk satu kolom dan menutupi hampir seluruh section,
+     jadi latar petaknya nyaris tak terlihat. display:none juga membatalkan
+     unduhan 10 cuplikan layarnya — hemat ~300 KB di jaringan seluler. */
+  .gm { display: none; }
   .pricing-grid { grid-template-columns: 1fr; }
   .proj-card { flex-basis: 86%; }     /* 1 kartu + sedikit intip kartu berikutnya */
   .proj-arrow { display: none; }       /* di HP cukup geser/swipe */
