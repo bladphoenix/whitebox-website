@@ -863,29 +863,53 @@ section { position: relative; z-index: 2; transition: background 0.4s; }
 .testi-summary-text { font-size: 0.9rem; color: var(--text-muted); font-weight: 400; }
 .testi-summary-text strong { color: var(--text); font-weight: 700; }
 
-.testi-slider { position: relative; margin-top: 8px; }
-.testi-track {
-  display: flex;
+/* ── Dinding testimoni: 3 kolom bergulir vertikal ──
+   Kolom 1 & 3 naik, kolom 2 turun. Tiap kolom berisi dua salinan identik dan
+   digeser tepat -50%, sehingga salinan kedua persis menggantikan yang pertama.
+   PENTING: jangan pakai `gap` di sini. Dengan gap, tinggi total = 2×grup + gap
+   sehingga -50% meleset setengah gap dan sambungannya kelihatan meloncat.
+   Jarak antar-kartu diambil dari margin-bottom .testi-card. */
+.testi-wall {
+  margin-top: 44px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  padding: 18px 2px 30px;
-  scrollbar-width: none;          /* Firefox: sembunyikan scrollbar */
-  -ms-overflow-style: none;
+  height: 720px;
+  overflow: hidden;
+  /* Pudarkan tepi atas & bawah supaya kartu tidak terpotong mendadak */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 11%, #000 89%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 11%, #000 89%, transparent 100%);
 }
-.testi-track::-webkit-scrollbar { display: none; } /* Chrome/Safari */
-
-.testi-card {
-  flex: 0 0 calc((100% - 48px) / 3);   /* 3 kartu terlihat di desktop (2 gap × 24px) */
-  scroll-snap-align: start;
+.testi-col { overflow: hidden; }
+.testi-col-inner {
   display: flex;
   flex-direction: column;
+  will-change: transform;
+  animation: testi-naik var(--durasi, 64s) linear infinite;
+}
+.testi-col[data-arah='down'] .testi-col-inner { animation-name: testi-turun; }
+
+/* Berhenti saat disentuh supaya testimoni bisa dibaca tuntas */
+.testi-wall:hover .testi-col-inner,
+.testi-wall:focus-within .testi-col-inner { animation-play-state: paused; }
+
+@keyframes testi-naik {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+@keyframes testi-turun {
+  from { transform: translateY(-50%); }
+  to   { transform: translateY(0); }
+}
+
+.testi-card {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;            /* sekaligus jarak antar-kartu dalam kolom */
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 28px;
+  padding: 26px;
   transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s, background 0.4s;
 }
 .testi-card:hover {
@@ -894,42 +918,31 @@ section { position: relative; z-index: 2; transition: background 0.4s; }
   box-shadow: 0 20px 40px rgba(0,0,0,0.05), 0 0 20px var(--glow);
 }
 
-/* Panah navigasi slider */
-.testi-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 54px; height: 54px;
-  border-radius: 50%;
-  border: none;
-  background: #ffffff;
-  color: #111827;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.2rem;
-  cursor: pointer;
-  z-index: 5;
-  /* cincin border putih → abu-abu → hitam biar tegas di light & dark mode */
-  box-shadow:
-    0 0 0 2px #ffffff,
-    0 0 0 4px #9ca3af,
-    0 0 0 6px #0b0f17,
-    0 10px 24px rgba(0,0,0,0.45);
-  transition: opacity 0.25s, background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+/* Layar sempit: tumpuk jadi satu lajur statis. Sengaja tidak menyembunyikan
+   kolom mana pun supaya seluruh testimoni tetap terbaca. */
+@media (max-width: 900px) {
+  .testi-wall {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+    gap: 0;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .testi-col-inner { animation: none; }
+  .testi-col-group + .testi-col-group { display: none; }
 }
-.testi-arrow:hover:not([aria-disabled="true"]) {
-  background: #111827;
-  color: #ffffff;
-  transform: translateY(-50%) scale(1.12);
-  /* hover: warna terbalik (hitam → abu → putih) */
-  box-shadow:
-    0 0 0 2px #0b0f17,
-    0 0 0 4px #9ca3af,
-    0 0 0 6px #ffffff,
-    0 12px 30px rgba(0,0,0,0.5);
+
+@media (prefers-reduced-motion: reduce) {
+  .testi-wall {
+    height: auto;
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .testi-col-inner { animation: none; }
+  .testi-col-group + .testi-col-group { display: none; }
 }
-.testi-arrow[aria-disabled="true"] { opacity: 0; pointer-events: none; }
-.testi-arrow-prev { left: -18px; }
-.testi-arrow-next { right: -18px; }
 .testi-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .testi-stars { display: inline-flex; gap: 3px; }
 .testi-stars i { color: #f5a623; font-size: 0.82rem; }
