@@ -17,11 +17,24 @@ export default function Navbar() {
     document.documentElement.setAttribute('data-theme', saved)
   }, [])
 
-  // Scroll listener
+  // Scroll listener — ambang bawah/atas dibedakan (histeresis) supaya pill
+  // tidak berkedip bolak-balik saat scroll berhenti tepat di titik ambang.
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40)
+    let frame = 0
+    const handleScroll = () => {
+      if (frame) return
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        const y = window.scrollY
+        setScrolled((prev) => (prev ? y > 8 : y > 28))
+      })
+    }
+    handleScroll()
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (frame) cancelAnimationFrame(frame)
+    }
   }, [])
 
   // Lock body scroll when mobile menu is open
@@ -43,12 +56,15 @@ export default function Navbar() {
       <nav id="navbar" className={scrolled ? 'scrolled' : ''}>
         <div className="nav-inner">
           <a href="#beranda" className="nav-logo">
+            {/* Tinggi diatur lewat .nav-logo img di globals.css supaya bisa
+                mengecil saat navbar berubah jadi pill — kalau ditulis inline,
+                style-nya mengalahkan CSS dan logo tidak ikut menyusut. */}
             <Image
               src="https://res.cloudinary.com/dlzihbwqt/image/upload/v1777537735/whitebox-logo_1_qemvpq.png"
               alt="Whitebox Logo"
               width={58}
               height={58}
-              style={{ maxHeight: 58, width: 'auto', objectFit: 'contain' }}
+              style={{ width: 'auto', objectFit: 'contain' }}
             />
             <div className="nav-logo-text">
               Whitebox<span>.asia</span>
