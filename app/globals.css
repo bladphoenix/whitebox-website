@@ -14,8 +14,12 @@
   --glow: rgba(79, 139, 255, 0.15);
   --mesh-1: rgba(79, 139, 255, 0.08);
   --mesh-2: rgba(124, 58, 237, 0.07);
-  --nav-bg: rgba(8, 12, 20, 0.75);
-  --nav-scrolled: rgba(8, 12, 20, 0.95);
+  --nav-bg: rgba(8, 12, 20, 0.55);
+  --nav-scrolled: rgba(14, 21, 33, 0.52);
+  /* Efek kaca: kilau tipis di tepi atas + garis gelap di tepi bawah,
+     meniru pantulan cahaya pada permukaan kaca. */
+  --nav-glass-edge: rgba(255, 255, 255, 0.14);
+  --nav-glass-border: rgba(255, 255, 255, 0.12);
   --ghost-bg: rgba(255, 255, 255, 0.03);
   --ghost-border: rgba(255, 255, 255, 0.1);
   --noise-op: 0.4;
@@ -37,8 +41,10 @@
   --glow: rgba(37, 99, 235, 0.15);
   --mesh-1: rgba(37, 99, 235, 0.08);
   --mesh-2: rgba(109, 40, 217, 0.06);
-  --nav-bg: rgba(248, 250, 252, 0.8);
-  --nav-scrolled: rgba(255, 255, 255, 0.98);
+  --nav-bg: rgba(248, 250, 252, 0.6);
+  --nav-scrolled: rgba(255, 255, 255, 0.6);
+  --nav-glass-edge: rgba(255, 255, 255, 0.75);
+  --nav-glass-border: rgba(15, 23, 42, 0.08);
   --ghost-bg: rgba(0, 0, 0, 0.03);
   --ghost-border: rgba(0, 0, 0, 0.1);
   --noise-op: 0.15;
@@ -132,9 +138,11 @@ nav {
   width: 100%;
   z-index: 100;
   padding: 0 24px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
+  /* Glassmorphism: saturate menaikkan warna yang tembus dari balik kaca,
+     supaya blur tidak membuatnya terlihat kelabu. */
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  border-bottom: 1px solid var(--nav-glass-border);
   background: var(--nav-bg);
   transition:
     padding var(--nav-morph-dur) var(--nav-morph-ease),
@@ -187,19 +195,22 @@ nav.scrolled .nav-inner {
   padding: 0 14px 0 22px;
   border-radius: 100px;
   background: var(--nav-scrolled);
-  border-color: var(--border);
+  border-color: var(--nav-glass-border);
+  /* inset baris pertama = kilau tepi atas kaca */
   box-shadow:
-    0 14px 40px rgba(0, 0, 0, 0.28),
-    0 3px 10px rgba(0, 0, 0, 0.14);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+    inset 0 1px 0 var(--nav-glass-edge),
+    0 14px 40px rgba(0, 0, 0, 0.3),
+    0 3px 10px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
 }
 
 /* Bayangan lebih lembut di tema terang */
 [data-theme='light'] nav.scrolled .nav-inner {
   box-shadow:
-    0 14px 40px rgba(15, 23, 42, 0.1),
-    0 3px 10px rgba(15, 23, 42, 0.06);
+    inset 0 1px 0 var(--nav-glass-edge),
+    0 14px 40px rgba(15, 23, 42, 0.12),
+    0 3px 10px rgba(15, 23, 42, 0.07);
 }
 
 /* Isi ikut menyusut tipis saat jadi pill — bukan mengecil drastis */
