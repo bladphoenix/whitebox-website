@@ -941,7 +941,73 @@ section { position: relative; z-index: 2; transition: background 0.4s; }
 .step-item p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; font-weight: 300; }
 
 /* ─── CONTACT ─────────────────────────── */
-#kontak { padding: 100px 24px; background: var(--surface); }
+/* Latar LetterGlitch (React Bits). Pola bertumpuknya sama dengan #layanan:
+   kanvas z-index 0, isi halaman z-index 1 — dua-duanya positif supaya tetap
+   berada di dalam stacking context milik `section`. */
+/* Kanvasnya dibiarkan hampir penuh dan yang mengatur keterbacaan adalah
+   vignette. Kalau sebaliknya (kanvas diredupkan, vignette tipis), warna
+   aksennya ikut mati di pinggir dan yang tersisa cuma tekstur kelabu. */
+:root {
+  --lg-op: 0.9;
+  /* Warna --surface dengan alfa hampir penuh dan nol, untuk vignette tengah.
+     Ditulis eksplisit, bukan `transparent`, supaya gradasinya tidak lewat
+     hitam di tema terang. */
+  --lg-veil: rgba(14, 21, 33, 0.96);
+  --lg-veil-0: rgba(14, 21, 33, 0);
+}
+[data-theme="light"] {
+  --lg-op: 0.8;
+  --lg-veil: rgba(255, 255, 255, 0.96);
+  --lg-veil-0: rgba(255, 255, 255, 0);
+}
+
+#kontak {
+  padding: 100px 24px;
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+}
+#kontak > .section-wrap { position: relative; z-index: 1; }
+
+.lg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.lg-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: var(--lg-op);
+  transition: opacity 0.4s;
+}
+.lg-vignette-tengah,
+.lg-vignette-luar { position: absolute; inset: 0; }
+
+/* Vignette tengah: bukan menggelapkan seperti komponen aslinya, tapi menutup
+   bagian tengah dengan warna latar section itu sendiri — supaya benar di tema
+   gelap maupun terang. Elipsnya sengaja lebih tinggi dari lebar isi (680px)
+   supaya bukan cuma judul yang aman, tapi juga subjudul dan baris jadwal di
+   bawah tombol; huruf glitch-nya hidup di pinggir, bukan di balik teks. */
+.lg-vignette-tengah {
+  background: radial-gradient(ellipse 66% 82% at 50% 52%, var(--lg-veil) 0%, var(--lg-veil) 36%, var(--lg-veil-0) 92%);
+}
+
+/* Tepi atas & bawah dilebur ke warna section, kalau tidak deretan hurufnya
+   terpotong di tengah baris dan batas dengan testimoni/footer terlihat
+   seperti kecelakaan. */
+.lg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--lg-veil) 0%, var(--lg-veil-0) 14%, var(--lg-veil-0) 86%, var(--lg-veil) 100%);
+}
+.lg-vignette-luar {
+  background: radial-gradient(circle, var(--lg-veil-0) 55%, var(--lg-veil) 100%);
+}
+
 .contact-inner { max-width: 680px; margin: 0 auto; text-align: center; }
 .contact-title {
   font-size: clamp(2.5rem, 4vw, 3.5rem); font-weight: 800;
@@ -1192,6 +1258,16 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); background: va
 
   .contact-btns { flex-direction: column; align-items: center; }
   .contact-btn { width: 100%; max-width: 320px; justify-content: center; }
+
+  /* Di layar sempit teksnya memenuhi hampir seluruh section — hanya tersisa
+     ~24px di kiri-kanan. Elips 66% yang dipakai di desktop tidak cukup
+     menutupinya, jadi vignette-nya dilebarkan sampai melewati tepi dan
+     kanvasnya diredupkan: glitch-nya turun jadi tekstur samar, bukan
+     sesuatu yang harus dilawan oleh mata saat membaca. */
+  :root, [data-theme="light"] { --lg-op: 0.45; }
+  .lg-vignette-tengah {
+    background: radial-gradient(ellipse 115% 92% at 50% 50%, var(--lg-veil) 0%, var(--lg-veil) 30%, var(--lg-veil-0) 96%);
+  }
 
   .footer-inner { flex-direction: column; gap: 24px; text-align: center; }
   .footer-links { justify-content: center; }
