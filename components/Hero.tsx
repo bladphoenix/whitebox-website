@@ -2,10 +2,12 @@
 
 import Image from 'next/image'
 import { useLanguage } from '@/lib/i18n'
+import { bisaDioptimalkan } from '@/lib/content'
 
 export default function Hero() {
-  const { t } = useLanguage()
+  const { t, p, content } = useLanguage()
   const h = t.hero
+  const { stats, image } = content.hero
 
   return (
     <section id="beranda">
@@ -29,10 +31,10 @@ export default function Hero() {
           </div>
 
           <div className="hero-stats reveal reveal-d2">
-            {h.stats.map((s, i) => (
+            {stats.map((s, i) => (
               <div className="stat-item" key={i}>
                 <div className="stat-num">{s.num}</div>
-                <div className="stat-label">{s.label}</div>
+                <div className="stat-label">{p(s.label, s.labelEn)}</div>
               </div>
             ))}
           </div>
@@ -48,11 +50,12 @@ export default function Hero() {
           </div>
           <div className="hero-img-wrap">
             <Image
-              src="https://images.unsplash.com/photo-1579403124614-197f69d8187b?q=80&w=800&auto=format&fit=crop"
+              src={image}
               alt="Whitebox.asia Workspace"
               fill
               sizes="(max-width: 768px) 0px, 50vw"
               style={{ objectFit: 'cover' }}
+              unoptimized={!bisaDioptimalkan(image)}
             />
             <div className="hero-quote">
               <p>{h.quote}</p>

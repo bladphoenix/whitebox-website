@@ -3,87 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useLanguage } from '@/lib/i18n'
-
-type Project = {
-  domain: string
-  img: string
-  tag: string
-  tagEn: string
-  color: string
-}
-
-const projects: Project[] = [
-  {
-    domain: 'rsud-iskak.com',
-    img: 'https://res.cloudinary.com/dmis60dxy/image/upload/v1784086501/rsud-iskak.com_zp2z5m.png',
-    tag: 'Instansi Kesehatan',
-    tagEn: 'Healthcare Institution',
-    color: '#3b82f6',
-  },
-  {
-    domain: 'colosseumcorporation.com',
-    img: 'https://res.cloudinary.com/dmis60dxy/image/upload/v1784086499/colosseumcorporation.com_t7b0qf.png',
-    tag: 'Korporat',
-    tagEn: 'Corporate',
-    color: '#14b8a6',
-  },
-  {
-    domain: 'serum78.com',
-    img: 'https://res.cloudinary.com/dmis60dxy/image/upload/v1784086501/serum78.com_ztqr7q.png',
-    tag: 'Brand & Skincare',
-    tagEn: 'Brand & Skincare',
-    color: '#f43f5e',
-  },
-  {
-    domain: 'verosdjayasteel.com',
-    img: 'https://res.cloudinary.com/dmis60dxy/image/upload/v1784086499/verosdjayasteel.com_eud2vc.png',
-    tag: 'Produsen Kandang Ayam',
-    tagEn: 'Poultry Cage Manufacturer',
-    color: '#f97316',
-  },
-  {
-    domain: 'balitravel.store',
-    img: 'https://res.cloudinary.com/dmis60dxy/image/upload/v1784086500/balitravel.store_zs4w34.png',
-    tag: 'Travel & Tour',
-    tagEn: 'Travel & Tour',
-    color: '#06b6d4',
-  },
-  {
-    domain: 'balisundaytour.com',
-    img: 'https://res.cloudinary.com/dmis60dxy/image/upload/v1784086500/balisundaytour.com_vtq59d.png',
-    tag: 'Travel & Tour',
-    tagEn: 'Travel & Tour',
-    color: '#06b6d4',
-  },
-  {
-    domain: 'holidaytobali.info',
-    img: 'https://res.cloudinary.com/dmis60dxy/image/upload/v1784086499/holidaytobali.info_dyti8h.png',
-    tag: 'Travel & Tour',
-    tagEn: 'Travel & Tour',
-    color: '#06b6d4',
-  },
-  {
-    domain: 'kostulungagung.com',
-    img: 'https://res.cloudinary.com/dmis60dxy/image/upload/v1784086501/kostulungagung.com_a7xr2l.png',
-    tag: 'Properti & Kos',
-    tagEn: 'Property & Boarding',
-    color: '#10b981',
-  },
-  {
-    domain: 'perdana-mentri.com',
-    img: 'https://res.cloudinary.com/dmis60dxy/image/upload/v1784086501/perdana-mentri.com_bnktqc.png',
-    tag: 'Portal Berita',
-    tagEn: 'News Portal',
-    color: '#ef4444',
-  },
-  {
-    domain: 'perdanamentri.com',
-    img: 'https://res.cloudinary.com/dmis60dxy/image/upload/v1784086501/perdanamentri.com_zb00tx.png',
-    tag: 'Portal Berita',
-    tagEn: 'News Portal',
-    color: '#ef4444',
-  },
-]
+import { bisaDioptimalkan, type Project } from '@/lib/content'
 
 /** true jika pengguna mengaktifkan "reduce motion" di OS */
 function prefersReducedMotion() {
@@ -91,7 +11,8 @@ function prefersReducedMotion() {
 }
 
 export default function Projects() {
-  const { t, lang } = useLanguage()
+  const { t, lang, content } = useLanguage()
+  const projects = content.projects
   const trackRef = useRef<HTMLDivElement>(null)
   const [atStart, setAtStart] = useState(true)
   const [atEnd, setAtEnd] = useState(false)
@@ -217,6 +138,7 @@ export default function Projects() {
                       width={640}
                       height={440}
                       sizes="(max-width: 768px) calc(86vw - 96px), (max-width: 1024px) calc(45vw - 96px), 364px"
+                      unoptimized={!bisaDioptimalkan(p.img)}
                     />
                     <span className="proj-zoom" aria-hidden="true">
                       <i className="fa-solid fa-magnifying-glass-plus" />

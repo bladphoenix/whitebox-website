@@ -10,6 +10,12 @@ import Contact from '@/components/Contact'
 import Footer from '@/components/Footer'
 import ScrollReveal from '@/components/ScrollReveal'
 
+/* Isi halaman datang dari data/content.json, jadi hasil render tidak lagi
+   bisa dibekukan saat build. ISR: disajikan dari cache, dibangun ulang paling
+   cepat tiap 5 menit — dan langsung, tanpa menunggu, setiap panel admin
+   menyimpan (lihat revalidatePath di app/api/admin/content/route.ts). */
+export const revalidate = 300
+
 export default function Home() {
   return (
     <>

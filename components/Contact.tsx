@@ -1,6 +1,7 @@
 'use client'
 
 import { useLanguage } from '@/lib/i18n'
+import { tgHref, waHref } from '@/lib/content'
 import LetterGlitch, { type Palet } from '@/components/LetterGlitch'
 
 /* Palet latar LetterGlitch. Tiga warna aksen situs plus satu warna redup:
@@ -13,7 +14,7 @@ const PALET: Palet = {
 }
 
 export default function Contact() {
-  const { t } = useLanguage()
+  const { t, content } = useLanguage()
   const c = t.contact
 
   return (
@@ -32,7 +33,7 @@ export default function Contact() {
 
           <div className="contact-btns">
             <a
-              href="https://wa.me/62859191749378"
+              href={waHref(content.contact.whatsapp)}
               target="_blank"
               rel="noopener noreferrer"
               className="contact-btn btn-wa"
@@ -40,7 +41,7 @@ export default function Contact() {
               <i className="fa-brands fa-whatsapp" /> WhatsApp
             </a>
             <a
-              href="https://t.me/+6287821381136"
+              href={tgHref(content.contact.telegram)}
               target="_blank"
               rel="noopener noreferrer"
               className="contact-btn btn-tg"
