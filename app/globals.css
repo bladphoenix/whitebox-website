@@ -456,19 +456,22 @@ h1.hero-title {
    .gradient-text yang menyusut membuat gradiennya bergeser sendiri. */
 .tt-sisa { visibility: hidden; }
 
-/* Kursor berlebar NOL dan glyph-nya diposisikan absolut, jadi ia tidak pernah
-   ikut menghitung lebar baris — kalau tidak, satu baris bisa berpindah
-   pembungkusan hanya karena kursornya lewat. */
+/* Kursor tidak boleh ikut menghitung lebar baris — kalau ikut, satu baris bisa
+   berpindah pembungkusan hanya karena kursornya lewat.
+   Caranya: kotak berlebar nol yang isinya dibiarkan meluber (overflow visible),
+   BUKAN glyph berposisi absolut. Kotak absolut menuntut induk berukuran, dan
+   inline-block kosong tingginya nol dengan sisi bawah tepat di baseline —
+   glyph-nya lalu mulai dari baseline dan jatuh satu baris penuh ke bawah.
+   Dengan overflow, kotaknya berisi satu baris teks sungguhan, jadi baseline-nya
+   sejajar sendiri dengan huruf di sebelahnya. */
 .tt-kursor {
-  position: relative;
   display: inline-block;
   width: 0;
+  overflow: visible;
+  white-space: pre;
 }
 .tt-kursor::after {
   content: '|';
-  position: absolute;
-  left: 0.06em;
-  top: 0;
   font-weight: 400;
   color: var(--accent);
   /* .gradient-text mewariskan text-fill transparan ke keturunannya; tanpa
