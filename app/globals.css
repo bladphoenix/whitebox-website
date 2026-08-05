@@ -449,6 +449,34 @@ h1.hero-title {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ─── EFEK MESIN KETIK (TextType) ─────── */
+/* Sisa teks yang belum diketik tetap memegang ruangnya. Tanpa ini seluruh
+   halaman di bawah judul ikut naik-turun selama pengetikan, dan kotak
+   .gradient-text yang menyusut membuat gradiennya bergeser sendiri. */
+.tt-sisa { visibility: hidden; }
+
+/* Kursor berlebar NOL dan glyph-nya diposisikan absolut, jadi ia tidak pernah
+   ikut menghitung lebar baris — kalau tidak, satu baris bisa berpindah
+   pembungkusan hanya karena kursornya lewat. */
+.tt-kursor {
+  position: relative;
+  display: inline-block;
+  width: 0;
+}
+.tt-kursor::after {
+  content: '|';
+  position: absolute;
+  left: 0.06em;
+  top: 0;
+  font-weight: 400;
+  color: var(--accent);
+  /* .gradient-text mewariskan text-fill transparan ke keturunannya; tanpa
+     baris ini kursor di baris beraksen tidak kelihatan sama sekali. */
+  -webkit-text-fill-color: var(--accent);
+  animation: tt-kedip 1s step-end infinite;
+}
+@keyframes tt-kedip { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 .hero-sub {
   font-size: 1.05rem;
   color: var(--text-muted);
@@ -884,7 +912,50 @@ section { position: relative; z-index: 2; transition: background 0.4s; }
 .price-card.featured {
   background: linear-gradient(135deg, var(--mesh-1), var(--surface));
   border-color: var(--accent); border-width: 1.5px; position: relative;
+  /* Membuat konteks penumpukan sendiri supaya .eb (z-index -1) berhenti tepat
+     di atas latar kartu ini, bukan tenggelam ke belakang seluruh section. */
+  isolation: isolate;
 }
+/* ─── GARIS TEPI LISTRIK (ElectricBorder) ─ */
+/* Lapisan di dalam .price-card.featured, bukan pembungkusnya — lihat catatan
+   di components/ElectricBorder.tsx. Kartunya sudah position:relative. */
+.eb {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: var(--accent);   /* dibaca kanvas lewat getComputedStyle().color */
+  /* z-index negatif = dilukis SESUDAH latar kartu tapi SEBELUM isinya, jadi
+     tidak perlu menyentuh satu pun anak kartu. Syaratnya kartu itu membuat
+     konteks penumpukan sendiri — itu tugas `isolation` di bawah. */
+  z-index: -1;
+}
+/* Kanvas lebih besar daripada kartunya (60 px tiap sisi) supaya sambaran yang
+   terlempar keluar tidak terpotong; dipusatkan, bukan inset:0. */
+.eb-kanvas-wadah {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+.eb-kanvas { display: block; }
+
+.eb-cahaya-1,
+.eb-cahaya-2,
+.eb-cahaya-latar {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-sizing: border-box;
+}
+.eb-cahaya-1 { border: 1.5px solid color-mix(in srgb, currentColor 55%, transparent); filter: blur(1px); }
+.eb-cahaya-2 { border: 1.5px solid color-mix(in srgb, currentColor 45%, #fff); filter: blur(5px); opacity: 0.55; }
+.eb-cahaya-latar {
+  z-index: -1;
+  transform: scale(1.06);
+  filter: blur(30px);
+  opacity: 0.22;
+  background: linear-gradient(-30deg, color-mix(in srgb, currentColor 45%, #fff), transparent, currentColor);
+}
+
 .price-badge {
   position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
   background: var(--accent); color: #fff; font-size: 0.7rem; font-weight: 600;
@@ -1197,6 +1268,8 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); background: va
   .bg-mesh::before, .bg-mesh::after,
   .marquee-track { animation: none !important; }
   .reveal { transition: none !important; }
+  /* judul tampil utuh, tanpa kursor yang berkedip */
+  .tt-kursor { display: none; }
 }
 
 /* ─── RESPONSIVE ──────────────────────── */

@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useLanguage } from '@/lib/i18n'
 import { bisaDioptimalkan } from '@/lib/content'
+import TextType from './TextType'
 
 export default function Hero() {
   const { t, p, content } = useLanguage()
@@ -16,10 +17,13 @@ export default function Hero() {
         <div>
           <div className="hero-badge reveal">{h.badge}</div>
 
-          <h1 className="hero-title reveal reveal-d1">
-            {h.titleTop}<br />
-            <span className="gradient-text">{h.titleAccent}</span>
-          </h1>
+          <TextType
+            className="hero-title reveal reveal-d1"
+            baris={[
+              { teks: h.titleTop },
+              { teks: h.titleAccent, className: 'gradient-text' },
+            ]}
+          />
 
           <p className="hero-sub reveal reveal-d2">{h.sub}</p>
 

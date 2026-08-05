@@ -2,6 +2,7 @@
 
 import { useLanguage } from '@/lib/i18n'
 import { dwi, type PriceCard, type PriceFeature } from '@/lib/content'
+import ElectricBorder from './ElectricBorder'
 
 const delays = ['', ' reveal-d1', ' reveal-d2', ' reveal-d3']
 
@@ -82,6 +83,7 @@ function Kartu({ card, isEn, delay }: { card: PriceCard; isEn: boolean; delay: s
 
   return (
     <div className={`price-card${card.featured ? ' featured' : ''} reveal${delay}`}>
+      {card.featured && <ElectricBorder radius={24} />}
       {card.badge && <div className="price-badge">{dwi(isEn, card.badge, card.badgeEn)}</div>}
 
       {card.amountInline ? (
