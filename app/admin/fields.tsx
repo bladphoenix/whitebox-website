@@ -135,7 +135,9 @@ export function Baris({
   ringkas?: string
   atas: () => void
   bawah: () => void
-  hapus: () => void
+  /** Tanpa ini tombol hapusnya tidak ditampilkan — dipakai untuk baris yang
+   *  tidak boleh habis, misalnya gambar hero terakhir. */
+  hapus?: () => void
   bukaAwal?: boolean
   children: React.ReactNode
 }) {
@@ -155,17 +157,19 @@ export function Baris({
           <button type="button" onClick={bawah} title="Turunkan" aria-label="Turunkan">
             <i className="fa-solid fa-arrow-down" />
           </button>
-          <button
-            type="button"
-            className="a-hapus"
-            title="Hapus"
-            aria-label="Hapus"
-            onClick={() => {
-              if (confirm(`Hapus "${judul}"? Perubahan baru permanen setelah kamu menyimpan.`)) hapus()
-            }}
-          >
-            <i className="fa-solid fa-trash" />
-          </button>
+          {hapus && (
+            <button
+              type="button"
+              className="a-hapus"
+              title="Hapus"
+              aria-label="Hapus"
+              onClick={() => {
+                if (confirm(`Hapus "${judul}"? Perubahan baru permanen setelah kamu menyimpan.`)) hapus()
+              }}
+            >
+              <i className="fa-solid fa-trash" />
+            </button>
+          )}
         </span>
       </div>
       {buka && <div className="a-baris-isi">{children}</div>}

@@ -128,8 +128,21 @@ export const heroStats: HeroStat[] = [
   { num: '99%', label: 'Uptime Server', labelEn: 'Server Uptime' },
 ]
 
-export const heroImage =
-  'https://images.unsplash.com/photo-1579403124614-197f69d8187b?q=80&w=800&auto=format&fit=crop'
+/* Gambar hero — dipakai korsel bertumpuk. Yang pertama tampil paling depan
+   saat halaman baru dibuka. Semuanya dipilih yang bernuansa gelap supaya tidak
+   menabrak tema situs; yang terang membuat bingkainya seperti berlubang. */
+export const heroImages = [
+  // monitor melengkung berisi kode — gambar hero lama
+  'https://images.unsplash.com/photo-1579403124614-197f69d8187b?q=80&w=800&auto=format&fit=crop',
+  // MacBook Pro dengan editor gelap
+  'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=800&auto=format&fit=crop',
+  // rak server
+  'https://images.unsplash.com/photo-1695668548342-c0c1ad479aee?q=80&w=800&auto=format&fit=crop',
+  // panel kabel jaringan
+  'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=800&auto=format&fit=crop',
+  // deretan perangkat di ruang data
+  'https://images.unsplash.com/photo-1639066648921-82d4500abf1a?q=80&w=800&auto=format&fit=crop',
+]
 
 /* ── Alur kerja ──────────────────────────────────────────────────── */
 export const workflowSteps: WorkflowStep[] = [

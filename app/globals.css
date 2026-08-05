@@ -531,8 +531,111 @@ h1.hero-title {
 .hero-img-wrap::before {
   content: ''; position: absolute; inset: 0;
   background: var(--bg-grad); z-index: 1;
+  /* Lapisan hias ini menutup seluruh bingkai di atas korsel. Tanpa baris ini
+     ia menelan semua peristiwa tetikus: hover tidak pernah sampai ke korsel
+     (autoplay-nya tidak mau berhenti) dan panahnya tidak bisa diklik. */
+  pointer-events: none;
 }
 .hero-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.9); }
+/* Kartu korsel sudah mengatur kecerahannya sendiri sebagai penanda kedalaman;
+   kalau aturan di atas ikut kena, kartu terdepan pun ikut redup dan bedanya
+   dengan kartu di belakangnya menipis. */
+.hero-img-wrap .dc-kartu img { filter: none; }
+
+/* ─── KORSEL KEDALAMAN (DepthCarousel) ── */
+/* isolation membuat z-index kartu (2000-an) tinggal di dalam korsel, sehingga
+   gradien ::before (z 1) dan kutipan (z 2) di bingkai hero tetap di atasnya. */
+.dc {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: var(--dc-perspektif, 1400px);
+  perspective-origin: 50% 50%;
+  touch-action: pan-y;   /* geser tegak tetap menggulung halaman */
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+.dc:active { cursor: grabbing; }
+.dc:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
+
+.dc-panggung { position: absolute; inset: 0; transform-style: preserve-3d; }
+
+.dc-kartu {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  overflow: hidden;
+  background: var(--surface2);
+  box-shadow: 0 30px 60px -20px rgba(0,0,0,0.65), 0 8px 20px -10px rgba(0,0,0,0.5);
+  will-change: transform, opacity, filter;
+  cursor: pointer;
+}
+.dc-gambar { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+.dc-tinta { position: absolute; inset: 0; opacity: 0; pointer-events: none; mix-blend-mode: multiply; }
+
+/* Sengaja TIDAK di 50% seperti aslinya: di bingkai hero, ketinggian itu sudah
+   ditempati badge mengambang "SSL Secured". Klik memang sudah bisa tembus
+   (pointer-events di atas), tapi panah yang tertutup badge tetap tidak
+   terlihat sebagai tombol. 30% berada di antara kedua badge. */
+.dc-panah {
+  position: absolute;
+  top: 30%;
+  transform: translateY(-50%);
+  z-index: 3000;
+  width: 38px; height: 38px;
+  display: grid; place-items: center;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  background: rgba(12, 16, 24, 0.5);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+.dc-panah:hover { background: rgba(20, 26, 38, 0.85); border-color: rgba(255,255,255,0.45); }
+.dc-panah:active { transform: translateY(-50%) scale(0.94); }
+.dc-panah-kiri { left: 10px; }
+.dc-panah-kanan { right: 10px; }
+
+/* Titik ditaruh di ATAS, bukan bawah seperti aslinya: bagian bawah bingkai
+   hero sudah ditempati kartu kutipan. */
+.dc-titik {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3000;
+  display: flex;
+  gap: 7px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(10, 14, 22, 0.45);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.dc-titik-satu {
+  width: 6px; height: 6px;
+  padding: 0; border: none; border-radius: 999px;
+  background: rgba(255,255,255,0.35);
+  cursor: pointer;
+  transition: width 0.25s, background 0.25s;
+}
+.dc-titik-satu.aktif { width: 18px; background: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dc-kartu { will-change: auto; }
+  .dc-panah, .dc-titik-satu { transition: none; }
+}
 
 .hero-quote {
   position: absolute; bottom: 24px; left: 24px; right: 24px; z-index: 2;
@@ -550,6 +653,9 @@ h1.hero-title {
   border-radius: 8px; padding: 10px 16px; font-size: 0.85rem; font-weight: 500;
   display: flex; align-items: center; gap: 10px; z-index: 3; color: var(--text);
   animation: floatY 4s ease-in-out infinite; box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  /* Label hiasan, bukan kendali. Tanpa ini badge "SSL Secured" — yang duduk
+     tepat di 50% tinggi bingkai — menelan klik pada panah korsel di baliknya. */
+  pointer-events: none;
 }
 .float-tag i { color: var(--accent); font-size: 1.1rem;}
 .float-tag-1 { top: 30px; right: -20px; animation-delay: 0s; }

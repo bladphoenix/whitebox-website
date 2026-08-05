@@ -30,7 +30,7 @@ export type Content = {
   version: number
   updatedAt: string
   text: SiteText
-  hero: { stats: HeroStat[]; image: string }
+  hero: { stats: HeroStat[]; images: string[] }
   services: ServiceCard[]
   projects: Project[]
   pricing: { main: PriceCard[]; row2: PriceCard[]; creative: PriceCard[] }
@@ -39,7 +39,8 @@ export type Content = {
   contact: { whatsapp: string; telegram: string }
 }
 
-export const CONTENT_VERSION = 1
+/* 1 → 2: hero.image (satu URL) menjadi hero.images (daftar) untuk korsel. */
+export const CONTENT_VERSION = 2
 
 /** Salinan dalam, supaya nilai awal tidak pernah ikut termutasi. */
 function salin<T>(v: T): T {
@@ -51,7 +52,7 @@ export function defaultContent(): Content {
     version: CONTENT_VERSION,
     updatedAt: '',
     text: siteText,
-    hero: { stats: seed.heroStats, image: seed.heroImage },
+    hero: { stats: seed.heroStats, images: seed.heroImages },
     services: seed.services,
     projects: seed.projects,
     pricing: {
@@ -98,6 +99,25 @@ function gabung<T>(bawaan: T, sumber: unknown): T {
  *  belakangan tidak membuat situs kosong pada JSON lama. */
 export function normalizeContent(mentah: unknown): Content {
   const c = gabung(defaultContent(), mentah)
+
+  /* Migrasi 1 → 2. Sebelum ada korsel, hero cuma punya satu `image`.
+     `gabung` hanya menyalin kunci yang dikenal bawaan, jadi `image` lama akan
+     terbuang diam-diam dan gambar pilihan pemilik situs tergantikan gambar
+     bawaan. Di sini ia diselamatkan dan tetap ditaruh paling depan; sisanya
+     diisi dari bawaan supaya korselnya tidak cuma berisi satu kartu. */
+  const heroLama = objek(objek(mentah)?.hero)
+  const satuGambar = heroLama?.image
+  const sudahDaftar = Array.isArray(heroLama?.images)
+  if (!sudahDaftar && typeof satuGambar === 'string' && satuGambar.trim()) {
+    const sisa = defaultContent().hero.images.filter((u) => u !== satuGambar)
+    c.hero.images = [satuGambar, ...sisa]
+  }
+  // Daftar kosong akan membuat hero tanpa gambar sama sekali.
+  if (!Array.isArray(c.hero.images) || c.hero.images.length === 0) {
+    c.hero.images = defaultContent().hero.images
+  }
+  c.hero.images = c.hero.images.filter((u) => typeof u === 'string' && u.trim())
+
   c.version = CONTENT_VERSION
   return c
 }

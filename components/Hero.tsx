@@ -1,14 +1,13 @@
 'use client'
 
-import Image from 'next/image'
 import { useLanguage } from '@/lib/i18n'
-import { bisaDioptimalkan } from '@/lib/content'
 import TextType from './TextType'
+import DepthCarousel from './DepthCarousel'
 
 export default function Hero() {
   const { t, p, content } = useLanguage()
   const h = t.hero
-  const { stats, image } = content.hero
+  const { stats, images } = content.hero
 
   return (
     <section id="beranda">
@@ -53,13 +52,17 @@ export default function Hero() {
             <i className="fa-solid fa-shield-halved" /> SSL Secured
           </div>
           <div className="hero-img-wrap">
-            <Image
-              src={image}
-              alt="Whitebox.asia Workspace"
-              fill
-              sizes="(max-width: 768px) 0px, 50vw"
-              style={{ objectFit: 'cover' }}
-              unoptimized={!bisaDioptimalkan(image)}
+            <DepthCarousel
+              slid={images.map((src, i) => ({
+                // Hanya kartu terdepan yang membawa makna; sisanya hiasan yang
+                // berputar, jadi alt-nya dikosongkan agar tidak dibacakan ulang.
+                gambar: src,
+                alt: i === 0 ? 'Whitebox.asia Workspace' : '',
+              }))}
+              lebarKartu={340}
+              tinggiKartu={500}
+              sebaran={62}
+              radius={16}
             />
             <div className="hero-quote">
               <p>{h.quote}</p>

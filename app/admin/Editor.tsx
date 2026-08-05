@@ -218,14 +218,38 @@ function TabHero({ c, ubah }: Props) {
       </section>
 
       <section className="a-kotak">
-        <h2>Gambar</h2>
-        <Teks
-          label="URL gambar hero"
-          value={c.hero.image}
-          onChange={(v) => ubah((d) => { d.hero.image = v })}
-          petunjuk="tempel URL gambar; boleh dari mana saja"
+        <h2>Gambar hero</h2>
+        <p className="a-catatan">
+          Tampil sebagai korsel bertumpuk. Yang paling atas di daftar ini yang
+          terlihat paling depan saat halaman dibuka. Kalau hanya diisi satu,
+          korselnya berhenti jadi satu gambar diam.
+        </p>
+        {c.hero.images.map((url, i) => (
+          <Baris
+            key={i}
+            judul={`Gambar ${i + 1}`}
+            ringkas={url.replace(/^https?:\/\//, '').slice(0, 52)}
+            atas={() => ubah((d) => { d.hero.images = geser(d.hero.images, i, i - 1) })}
+            bawah={() => ubah((d) => { d.hero.images = geser(d.hero.images, i, i + 1) })}
+            hapus={
+              c.hero.images.length > 1
+                ? () => ubah((d) => { d.hero.images.splice(i, 1) })
+                : undefined
+            }
+          >
+            <Teks
+              label="URL gambar"
+              value={url}
+              onChange={(v) => ubah((d) => { d.hero.images[i] = v })}
+              petunjuk="tempel URL gambar; boleh dari mana saja"
+            />
+            <Pratinjau url={url} />
+          </Baris>
+        ))}
+        <TambahBaris
+          label="Tambah gambar"
+          onClick={() => ubah((d) => { d.hero.images.push('') })}
         />
-        <Pratinjau url={c.hero.image} />
       </section>
 
       <section className="a-kotak">
