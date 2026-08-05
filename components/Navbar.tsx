@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useLanguage } from '@/lib/i18n'
+import GooeyNav from './GooeyNav'
 
 export default function Navbar() {
   const { t, lang, setLang } = useLanguage()
@@ -72,14 +73,19 @@ export default function Navbar() {
           </a>
 
           <div className="nav-right">
-            <ul className="nav-links">
-              <li><a href="#beranda">{t.nav.home}</a></li>
-              <li><a href="#layanan">{t.nav.services}</a></li>
-              <li><a href="#portofolio">{t.nav.portfolio}</a></li>
-              <li><a href="#harga">{t.nav.pricing}</a></li>
-              <li><a href="#testimoni">{t.nav.testimonials}</a></li>
-              <li><a href="#kontak" className="nav-cta">{t.nav.cta}</a></li>
-            </ul>
+            {/* Tombol CTA sengaja di luar daftar gooey: pil penandanya menandai
+                "kamu sedang di bagian ini", sedangkan CTA adalah ajakan, bukan
+                bagian halaman yang bisa sedang dibuka. */}
+            <GooeyNav
+              item={[
+                { label: t.nav.home, href: '#beranda' },
+                { label: t.nav.services, href: '#layanan' },
+                { label: t.nav.portfolio, href: '#portofolio' },
+                { label: t.nav.pricing, href: '#harga' },
+                { label: t.nav.testimonials, href: '#testimoni' },
+              ]}
+              cta={<a href="#kontak" className="nav-cta">{t.nav.cta}</a>}
+            />
 
             <div className="lang-switch" role="group" aria-label="Language / Bahasa">
               <button

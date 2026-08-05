@@ -218,7 +218,8 @@ nav.scrolled .nav-logo { gap: 11px; }
 nav.scrolled .nav-logo img { max-height: 50px; }
 nav.scrolled .nav-logo-text { font-size: 1.3rem; }
 nav.scrolled .nav-right { gap: 28px; }
-nav.scrolled .nav-links { gap: 29px; }
+/* 29px - 26px padding pil = 3px. Lihat catatan di .nav-links. */
+nav.scrolled .nav-links { gap: 3px; }
 nav.scrolled .nav-links a { font-size: 0.885rem; }
 nav.scrolled .nav-cta { padding: 9px 21px; }
 nav.scrolled .theme-toggle { width: 37px; height: 37px; font-size: 1.05rem; }
@@ -269,7 +270,12 @@ nav.scrolled .lang-switch button { padding: 7px 10px; font-size: 0.7rem; }
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 32px;
+  /* Dulu 32px. Sejak menu punya pil penanda, jarak antar labelnya pindah ke
+     padding masing-masing menu (13px kiri + 13px kanan = badan pilnya), jadi
+     jaraknya tinggal 6px supaya jarak antar LABEL tetap 32px seperti semula.
+     Lebar total menu wajib tidak berubah: di 1081px — satu piksel sebelum
+     navbar berpindah ke hamburger — sisa ruang di bilahnya cuma belasan px. */
+  gap: 6px;
   list-style: none;
   transition: gap var(--nav-morph-dur) var(--nav-morph-ease);
 }
@@ -291,6 +297,151 @@ nav.scrolled .lang-switch button { padding: 7px 10px; font-size: 0.7rem; }
     padding var(--nav-morph-dur) var(--nav-morph-ease) !important;
 }
 .nav-cta:hover { opacity: 0.9 !important; transform: translateY(-1px); }
+
+/* ─── Menu gooey ──────────────────────────
+   Pil penanda + letupan partikel yang meleleh menyatu dengannya.
+   Komponennya: components/GooeyNav.tsx */
+.gn {
+  position: relative;
+  /* Pilnya memakai warna teks — nyaris putih di tema gelap, nyaris hitam di
+     tema terang. Satu aturan, kontras labelnya aman di kedua tema, dan tidak
+     bertabrakan dengan tombol CTA di sebelahnya yang berwarna aksen. */
+  --gn-pil: var(--text);
+  --gn-teks-aktif: var(--bg);
+  --gn-warna-1: var(--accent);
+  --gn-warna-2: var(--accent2);
+  --gn-warna-3: var(--accent3);
+  --gn-warna-4: var(--text);
+}
+
+/* Label harus berada di atas lapisan pil. */
+.gn .nav-links {
+  position: relative;
+  z-index: 2;
+}
+
+.gn-item > a {
+  display: block;
+  padding: 9px 13px;
+  border-radius: 100px;
+}
+/* Padding menu terakhir sudah menyumbang 13px dari 32px jarak ke tombol CTA;
+   sisanya 13px lagi. */
+.gn-cta { margin-left: 13px; }
+
+.gn-item.aktif > a,
+.gn-item.aktif > a:hover { color: var(--gn-teks-aktif); }
+
+.gn-efek {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  z-index: 1;
+  pointer-events: none;
+  /* Blur lalu alfanya diambang. Itulah yang membuat partikel meleleh menyatu
+     dengan pil begitu jaraknya cukup dekat. */
+  filter: url(#gn-leleh);
+}
+.gn-efek::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 100px;
+  background: var(--gn-pil);
+  transform: scale(0);
+  opacity: 0;
+}
+.gn-efek.gn-nyala::after { animation: gn-pil 0.34s ease both; }
+@keyframes gn-pil { to { transform: scale(1); opacity: 1; } }
+
+/* <svg> tanpa ukuran akan memesan 300×150px. Dibuat 0 dan diangkat keluar alur
+   — bukan display:none, karena sebagian peramban berhenti menemukan filter
+   yang induknya tidak dirender. */
+.gn-svg {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.gn-partikel,
+.gn-titik {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  opacity: 0;
+  transform-origin: center;
+}
+.gn-partikel {
+  position: absolute;
+  top: calc(50% - 10px);
+  left: calc(50% - 10px);
+  /* jeda negatif: letupannya dimulai saat sudah sedikit berjalan */
+  animation: gn-partikel var(--waktu) ease 1 -350ms;
+}
+.gn-titik {
+  background: var(--warna);
+  opacity: 1;
+  animation: gn-titik var(--waktu) ease 1 -350ms;
+}
+
+@keyframes gn-partikel {
+  0% {
+    transform: rotate(0deg) translate(var(--mulai-x), var(--mulai-y));
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  70% {
+    transform: rotate(calc(var(--putar) * 0.5))
+      translate(calc(var(--akhir-x) * 1.2), calc(var(--akhir-y) * 1.2));
+    opacity: 1;
+    animation-timing-function: ease;
+  }
+  85% {
+    transform: rotate(calc(var(--putar) * 0.66)) translate(var(--akhir-x), var(--akhir-y));
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(calc(var(--putar) * 1.2))
+      translate(calc(var(--akhir-x) * 0.5), calc(var(--akhir-y) * 0.5));
+    opacity: 1;
+  }
+}
+@keyframes gn-titik {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  25% { transform: scale(calc(var(--skala) * 0.25)); }
+  38% { opacity: 1; }
+  65% {
+    transform: scale(var(--skala));
+    opacity: 1;
+    animation-timing-function: ease;
+  }
+  85% {
+    transform: scale(var(--skala));
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* Pil tetap berpindah, hanya tanpa dientak — letupannya sendiri sudah
+   dibatalkan dari sisi JS. */
+@media (prefers-reduced-motion: reduce) {
+  .gn-efek.gn-nyala::after {
+    animation: none;
+    transform: scale(1);
+    opacity: 1;
+  }
+}
 
 .theme-toggle {
   background: var(--ghost-bg);
@@ -1431,7 +1582,9 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); background: va
    layar benar-benar sempit, bukan urusan menu. */
 @media (max-width: 1080px) {
   .nav-right { gap: 16px; }
-  .nav-links { display: none; }        /* termasuk tombol CTA yang ada di dalamnya */
+  /* Yang disembunyikan pembungkusnya, bukan <ul>-nya: kalau hanya daftarnya
+     yang dilepas, lapisan pil di dalam .gn masih tergambar mengambang. */
+  .gn { display: none; }               /* termasuk tombol CTA yang ada di dalamnya */
   .nav-hamburger { display: flex; }
   .nav-right .lang-switch { display: none; } /* dipindah ke dalam menu hamburger */
 }
