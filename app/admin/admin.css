@@ -65,10 +65,16 @@
 }
 
 /* ── Kerangka ────────────────────────────────────────────────────── */
+/* globals.css memberi SEMUA <section> `position: relative; z-index: 2`, dan
+   kotak-kotak panel ini juga <section>. Tanpa dikembalikan ke static, nilainya
+   seri dengan bilah tab dan yang belakangan di DOM yang menang — isinya
+   menutupi tab saat digulir. */
+.a-kotak { position: static; z-index: auto; }
+
 .a-top {
   position: sticky;
   top: 0;
-  z-index: 3;
+  z-index: 6;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -106,7 +112,7 @@
 .a-tabs {
   position: sticky;
   top: 57px;
-  z-index: 2;
+  z-index: 5;
   display: flex;
   gap: 4px;
   overflow-x: auto;
