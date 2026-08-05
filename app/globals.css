@@ -1172,20 +1172,47 @@ section { position: relative; z-index: 2; transition: background 0.4s; }
   box-shadow: 0 20px 40px rgba(0,0,0,0.05), 0 0 20px var(--glow);
 }
 
-/* Layar sempit: tumpuk jadi satu lajur statis. Sengaja tidak menyembunyikan
-   kolom mana pun supaya seluruh testimoni tetap terbaca. */
+/* Layar sempit: dinding bergulir diganti satu lajur biasa, tiga testimoni
+   dulu, sisanya di balik tombol.
+   Dua susunan itu sama-sama ada di DOM dan dipilih lewat `display`, bukan
+   lewat JavaScript. Alasannya: `display: none` mengeluarkan isinya dari pohon
+   aksesibilitas, jadi pembaca layar selalu menemukan tepat satu salinan —
+   sesuatu yang tidak bisa dilakukan aria-hidden karena ia tidak bisa
+   mengikuti media query. Menukarnya lewat JavaScript juga akan berkedip saat
+   hidrasi dan melewatkan pengamat .reveal yang hanya berjalan sekali.
+   Harganya: satu salinan kartu tambahan di HTML — teks berulang, jadi hampir
+   tidak terasa sesudah kompresi. */
+.testi-mobile { display: none; }
+
 @media (max-width: 900px) {
-  .testi-wall {
-    grid-template-columns: 1fr;
-    height: auto;
-    overflow: visible;
-    gap: 0;
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-  .testi-col-inner { animation: none; }
-  .testi-col-group + .testi-col-group { display: none; }
+  .testi-wall { display: none; }
+  .testi-mobile { display: block; margin-top: 40px; }
+
+  /* Kartu keempat dan seterusnya baru muncul sesudah tombol ditekan.
+     display:flex, bukan block — .testi-card memang wadah flex. */
+  .testi-m-list > .testi-card:nth-child(n + 4) { display: none; }
+  .testi-m-list.terbuka > .testi-card:nth-child(n + 4) { display: flex; }
 }
+
+.testi-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px 22px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--ghost-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.testi-more:hover { border-color: var(--accent); color: var(--accent); }
+.testi-more i { font-size: 0.78rem; }
 
 @media (prefers-reduced-motion: reduce) {
   .testi-wall {
@@ -1283,12 +1310,22 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); background: va
   .testi-card { flex-basis: calc((100% - 24px) / 2); } /* 2 kartu di tablet */
 }
 
-@media (max-width: 768px) {
+/* Navbar pindah ke hamburger JAUH sebelum 768px.
+   Diukur dengan puppeteer: tombol CTA mulai terbungkus jadi dua baris di
+   1030px (Indonesia, navbar atas), 1016px (Inggris), dan 1008/994px saat
+   navbar sudah jadi pill — pill lebih sempit daripada navbar penuh. Batasnya
+   diambil 1080px supaya masih ada jarak aman untuk selisih lebar huruf saat
+   font Inter/Playfair belum selesai dimuat.
+   Rapat-rapat pill (tinggi, padding, ukuran logo) tetap di 768px: itu urusan
+   layar benar-benar sempit, bukan urusan menu. */
+@media (max-width: 1080px) {
   .nav-right { gap: 16px; }
-  .nav-links { display: none; }
+  .nav-links { display: none; }        /* termasuk tombol CTA yang ada di dalamnya */
   .nav-hamburger { display: flex; }
   .nav-right .lang-switch { display: none; } /* dipindah ke dalam menu hamburger */
+}
 
+@media (max-width: 768px) {
   /* Pill di layar sempit: jarak tepi lebih rapat, susutnya tetap tipis */
   nav.scrolled { padding: 12px 14px; }
   nav.scrolled .nav-inner {

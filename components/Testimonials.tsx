@@ -1,5 +1,6 @@
 ﻿'use client'
 
+import { useState } from 'react'
 import { useLanguage } from '@/lib/i18n'
 import type { Testimonial } from '@/lib/content'
 
@@ -49,12 +50,18 @@ function bagiKolom(items: Testimonial[]) {
   return Array.from({ length: KOLOM }, (_, c) => items.filter((_, i) => i % KOLOM === c))
 }
 
+/** Berapa testimoni yang langsung tampil di layar sempit. */
+const AWAL_MOBILE = 3
+
 export default function Testimonials() {
   const { t, isEn, content } = useLanguage()
+  const [semua, setSemua] = useState(false)
 
   // Testimoni yang ditandai "sembunyikan" di panel tetap tersimpan di JSON,
   // hanya tidak ikut tampil.
-  const kolomItems = bagiKolom(content.testimonials.filter((x) => !x.hidden))
+  const tampil = content.testimonials.filter((x) => !x.hidden)
+  const kolomItems = bagiKolom(tampil)
+  const sisa = tampil.length - AWAL_MOBILE
 
   const Kartu = ({ item }: { item: Testimonial }) => (
     <div className="testi-card">
@@ -125,6 +132,25 @@ export default function Testimonials() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Layar sempit: satu lajur, tiga dulu, sisanya di balik tombol.
+            Seluruh testimoni tetap dirender ke HTML — yang belum tampil hanya
+            disembunyikan lewat CSS — supaya isinya tidak hilang dari sumber
+            halaman untuk mesin telusur. */}
+        <div className="testi-mobile reveal">
+          <div className={`testi-m-list${semua ? ' terbuka' : ''}`}>
+            {tampil.map((item, i) => (
+              <Kartu key={i} item={item} />
+            ))}
+          </div>
+
+          {!semua && sisa > 0 && (
+            <button type="button" className="testi-more" onClick={() => setSemua(true)}>
+              {isEn ? `Show ${sisa} more testimonials` : `Lihat ${sisa} testimoni lainnya`}
+              <i className="fa-solid fa-chevron-down" aria-hidden="true" />
+            </button>
+          )}
         </div>
       </div>
     </section>
