@@ -221,7 +221,7 @@ nav.scrolled .nav-right { gap: 28px; }
 /* 29px - 26px padding pil = 3px. Lihat catatan di .nav-links. */
 nav.scrolled .nav-links { gap: 3px; }
 nav.scrolled .nav-links a { font-size: 0.885rem; }
-nav.scrolled .nav-cta { padding: 9px 21px; }
+nav.scrolled .nav-cta { padding: 7px 21px; }
 nav.scrolled .theme-toggle { width: 37px; height: 37px; font-size: 1.05rem; }
 nav.scrolled .lang-switch button { padding: 7px 10px; font-size: 0.7rem; }
 
@@ -290,7 +290,9 @@ nav.scrolled .lang-switch button { padding: 7px 10px; font-size: 0.7rem; }
 .nav-cta {
   background: var(--accent) !important;
   color: #fff !important;
-  padding: 10px 22px;
+  /* 10px → 8px: tombolnya jadi 33px, bukan 37px. Pil menu mengikuti angka
+     yang sama supaya dua keping biru ini setinggi persis. */
+  padding: 8px 22px;
   border-radius: 8px;
   font-weight: 600 !important;
   transition: opacity 0.2s, transform 0.2s,
@@ -324,9 +326,17 @@ nav.scrolled .lang-switch button { padding: 7px 10px; font-size: 0.7rem; }
 
 .gn-item > a {
   display: block;
-  padding: 9px 13px;
+  padding: 8px 13px;
+  /* Wajib ditulis. Begitu jadi block, tautannya mewarisi line-height 1,7 dari
+     body — 27px ruang baris untuk huruf 14px — dan pilnya membengkak 10px
+     lebih tinggi daripada tombol CTA yang masih inline di sebelahnya. Angka
+     1,18 menyamai tinggi kotak huruf tombol CTA, jadi keduanya sama persis. */
+  line-height: 1.18;
   border-radius: 100px;
 }
+/* Padding tegaknya ikut menyusut bersama CTA saat navbar jadi pill. Padding
+   mendatarnya sengaja tetap 13px: itu yang menjaga lebar total menu. */
+nav.scrolled .gn-item > a { padding: 7px 13px; }
 /* Padding menu terakhir sudah menyumbang 13px dari 32px jarak ke tombol CTA;
    sisanya 13px lagi. */
 .gn-cta { margin-left: 13px; }
