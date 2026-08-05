@@ -31,6 +31,11 @@ import { useEffect, useRef, useState } from 'react'
  *    pilnya berubah ukuran sendiri setelah klik pertama.
  * 5. Diam saat pengguna minta "reduce motion" — pilnya tetap berpindah, hanya
  *    tanpa letupan.
+ *
+ * Tambahan yang tidak ada di aslinya: pil juga mengikuti posisi gulungan
+ * halaman. Diklik → melompat sambil meletup; digulung → meluncur pelan tanpa
+ * letupan. Begitu halaman sampai di bagian kontak, pilnya padam: tidak ada
+ * menu yang sedang dibuka, dan tombol CTA yang sewarna itulah penandanya.
  */
 
 export type ItemGooey = { label: string; href: string }
@@ -41,6 +46,9 @@ const PUTARAN_PARTIKEL = 100
 const DURASI = 560 // ms
 const RAGAM_WAKTU = 280 // ms, selisih acak antar partikel
 const WARNA = [1, 2, 3, 1, 2, 3, 1, 4]
+/** Selama gulungan mulus menuju menu yang baru diklik, pengintai posisi
+ *  diabaikan sampai sampai di tujuan — atau paling lama sekian ms. */
+const KUNCI_KLIK = 1500
 
 const derau = (n = 1) => n / 2 - Math.random() * n
 
@@ -53,17 +61,27 @@ const lingkar = (jarak: number, ke: number, total: number): [number, number] => 
 export default function GooeyNav({
   item,
   cta,
+  akhir,
   awal = 0,
 }: {
   item: ItemGooey[]
   /** Tombol ajakan di ujung daftar — di luar jangkauan pil. */
   cta?: React.ReactNode
+  /** Bagian sesudah menu terakhir, mis. "#kontak". Begitu bagian ini tercapai
+   *  pilnya dipadamkan; tanpa ini menu terakhir akan tetap menyala sampai
+   *  kaki halaman padahal bagiannya sudah lama terlewat. */
+  akhir?: string
   awal?: number
 }) {
   const wadahRef = useRef<HTMLDivElement>(null)
   const daftarRef = useRef<HTMLUListElement>(null)
   const lapisRef = useRef<HTMLSpanElement>(null)
   const [aktif, setAktif] = useState(awal)
+  const kunciRef = useRef<{ ke: number; sampai: number } | null>(null)
+  const luncurRef = useRef(false)
+  const sebelumRef = useRef(awal)
+  const periksaRef = useRef<() => void>(() => {})
+  const jamRef = useRef(0)
 
   const tempelkanKe = (li: HTMLElement) => {
     const wadah = wadahRef.current
@@ -82,23 +100,124 @@ export default function GooeyNav({
     const lapis = lapisRef.current
     if (!daftar || !lapis) return
 
-    const pindah = () => {
-      const li = daftar.querySelectorAll<HTMLElement>('.gn-item')[aktif]
-      if (li) tempelkanKe(li)
+    const sebelum = sebelumRef.current
+    sebelumRef.current = aktif
+    // Meluncur hanya kalau perpindahannya datang dari gulungan DAN ada pil
+    // yang benar-benar bisa diluncurkan; dari keadaan padam tidak ada titik
+    // berangkatnya, jadi lebih baik muncul di tempat baru.
+    const meluncur = luncurRef.current && sebelum >= 0 && aktif >= 0
+    luncurRef.current = false
+
+    if (aktif < 0) {
+      lapis.classList.remove('gn-nyala', 'gn-luncur')
+      lapis.classList.add('gn-padam')
+      return
     }
-    pindah()
-    lapis.classList.add('gn-nyala')
+
+    const pindah = (mulus: boolean) => {
+      const li = daftar.querySelectorAll<HTMLElement>('.gn-item')[aktif]
+      if (!li) return
+      lapis.classList.toggle('gn-luncur', mulus)
+      tempelkanKe(li)
+    }
+
+    if (meluncur) {
+      pindah(true)
+    } else {
+      pindah(false)
+      lapis.classList.remove('gn-padam', 'gn-nyala')
+      void lapis.offsetWidth // paksa reflow supaya entakannya diputar ulang
+      lapis.classList.add('gn-nyala')
+    }
 
     // Ukuran menu berubah sendiri di tiga keadaan: navbar menyusut jadi pill
     // (jarak antar menu dan ukuran hurufnya dianimasikan 0,7 detik), bahasa
     // ditukar ID↔EN, dan font Inter selesai dimuat. ResizeObserver menembak di
-    // setiap frame perubahan itu, jadi pilnya menempel terus tanpa perlu
-    // transisi sendiri — sekaligus tidak ikut tertinggal saat navbar bergerak.
-    const ro = new ResizeObserver(pindah)
+    // setiap frame perubahan itu, jadi pilnya menempel terus. Perpindahan
+    // seperti ini selalu tanpa luncuran: kalau tidak, pil akan tertinggal
+    // sepersekian detik di belakang labelnya selama navbar bergerak.
+    let pertama = true
+    const ro = new ResizeObserver(() => {
+      // Panggilan pertama datang begitu observe() dipasang, bukan karena ada
+      // yang berubah — kalau tidak dilewat, luncuran barusan langsung dibatalkan.
+      if (pertama) {
+        pertama = false
+        return
+      }
+      pindah(false)
+    })
     ro.observe(daftar)
     return () => ro.disconnect()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aktif])
+
+  // Pengintai posisi gulungan: menu yang menyala mengikuti bagian yang sedang
+  // dibaca. Daftar href dijadikan satu string supaya efeknya tidak dipasang
+  // ulang tiap render — prop `item` selalu array baru.
+  const sasaran = item.map((it) => it.href).join('|')
+  useEffect(() => {
+    const daftarSasaran = sasaran.split('|')
+    let frame = 0
+
+    const periksa = () => {
+      frame = 0
+      // Garis pengukur ditaruh di sepertiga atas layar, bukan tepat di bawah
+      // navbar: bagian dianggap "sedang dibaca" saat isinya sudah mengisi
+      // layar, bukan saat tepi atasnya baru menyentuh navbar.
+      const garis = Math.max(120, window.innerHeight * 0.35)
+      const lewat = (pilih: string) => {
+        const el = document.querySelector(pilih)
+        return !!el && el.getBoundingClientRect().top <= garis
+      }
+
+      let ke = -1
+      for (let i = 0; i < daftarSasaran.length; i++) if (lewat(daftarSasaran[i])) ke = i
+      if (akhir && lewat(akhir)) ke = -1
+
+      const kunci = kunciRef.current
+      if (kunci) {
+        if (ke === kunci.ke || Date.now() > kunci.sampai) kunciRef.current = null
+        else return
+      }
+
+      setAktif((lama) => {
+        if (lama === ke) return lama
+        luncurRef.current = true
+        return ke
+      })
+    }
+
+    // Dipegang di ref supaya bisa dipanggil sekali lagi saat kunci klik habis:
+    // pengintai ini hanya jalan waktu ada gulungan, jadi kalau pengguna
+    // terlanjur melompat ke tempat lain selagi terkunci lalu berhenti, tidak
+    // ada apa pun yang membangunkannya lagi dan pil tertinggal di menu lama.
+    periksaRef.current = periksa
+
+    const saatGulung = () => {
+      if (!frame) frame = requestAnimationFrame(periksa)
+    }
+    // Pengguna menggulung sendiri: peramban sudah membatalkan gulungan mulus
+    // dari klik barusan, jadi kuncinya tidak ada gunanya lagi. Tanpa ini pil
+    // baru menyusul setelah kuncinya habis.
+    const ambilAlih = () => {
+      kunciRef.current = null
+    }
+
+    periksa() // langsung benar kalau halaman dibuka dengan #harga di URL-nya
+    window.addEventListener('scroll', saatGulung, { passive: true })
+    window.addEventListener('resize', saatGulung)
+    window.addEventListener('wheel', ambilAlih, { passive: true })
+    window.addEventListener('touchstart', ambilAlih, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', saatGulung)
+      window.removeEventListener('resize', saatGulung)
+      window.removeEventListener('wheel', ambilAlih)
+      window.removeEventListener('touchstart', ambilAlih)
+      if (frame) cancelAnimationFrame(frame)
+    }
+  }, [sasaran, akhir])
+
+  useEffect(() => () => window.clearTimeout(jamRef.current), [])
 
   const letupkan = (lapis: HTMLElement) => {
     // Sisa letupan sebelumnya dibuang: klik beruntun tidak boleh menumpuk.
@@ -138,6 +257,12 @@ export default function GooeyNav({
   }
 
   const klik = (e: React.MouseEvent<HTMLAnchorElement>, ke: number) => {
+    // Dikunci lebih dulu, bahkan kalau menunya itu-itu juga: gulungan mulus
+    // menuju bagiannya melewati bagian-bagian lain, dan tanpa kunci ini pil
+    // akan meloncat-loncat mengikuti setiap bagian yang terlewat.
+    kunciRef.current = { ke, sampai: Date.now() + KUNCI_KLIK }
+    window.clearTimeout(jamRef.current)
+    jamRef.current = window.setTimeout(() => periksaRef.current(), KUNCI_KLIK + 60)
     if (ke === aktif) return
     setAktif(ke)
 
@@ -147,10 +272,8 @@ export default function GooeyNav({
 
     // Dipindah di sini juga, bukan hanya lewat efek: kalau menunggu render
     // berikutnya, pil dan partikelnya sempat terlihat satu frame di menu lama.
+    lapis.classList.remove('gn-luncur')
     tempelkanKe(li)
-    lapis.classList.remove('gn-nyala')
-    void lapis.offsetWidth // paksa reflow supaya animasi pilnya diputar ulang
-    lapis.classList.add('gn-nyala')
 
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) letupkan(lapis)
   }

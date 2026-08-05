@@ -303,15 +303,17 @@ nav.scrolled .lang-switch button { padding: 7px 10px; font-size: 0.7rem; }
    Komponennya: components/GooeyNav.tsx */
 .gn {
   position: relative;
-  /* Pilnya memakai warna teks — nyaris putih di tema gelap, nyaris hitam di
-     tema terang. Satu aturan, kontras labelnya aman di kedua tema, dan tidak
-     bertabrakan dengan tombol CTA di sebelahnya yang berwarna aksen. */
-  --gn-pil: var(--text);
-  --gn-teks-aktif: var(--bg);
+  /* Sewarna tombol CTA di sebelahnya, isinya putih persis seperti CTA juga.
+     Bentuknya yang membedakan: pil ini bulat penuh, tombol CTA bersudut 8px —
+     satu penanda posisi, satu tombol. */
+  --gn-pil: var(--accent);
+  --gn-teks-aktif: #fff;
   --gn-warna-1: var(--accent);
   --gn-warna-2: var(--accent2);
   --gn-warna-3: var(--accent3);
-  --gn-warna-4: var(--text);
+  /* Aksen dicampur warna teks: jadi biru muda di tema gelap dan biru tua di
+     tema terang, tanpa aturan terpisah per tema. */
+  --gn-warna-4: color-mix(in srgb, var(--accent) 65%, var(--text));
 }
 
 /* Label harus berada di atas lapisan pil. */
@@ -355,6 +357,25 @@ nav.scrolled .lang-switch button { padding: 7px 10px; font-size: 0.7rem; }
 }
 .gn-efek.gn-nyala::after { animation: gn-pil 0.34s ease both; }
 @keyframes gn-pil { to { transform: scale(1); opacity: 1; } }
+
+/* Berpindah karena halaman digulung: meluncur, bukan dientak. Kelas ini hanya
+   dipasang untuk perpindahan itu — saat navbar menyusut jadi pill, posisinya
+   dihitung ulang tiap frame dan transisi apa pun akan membuat pil tertinggal
+   di belakang labelnya. */
+.gn-efek.gn-luncur {
+  transition:
+    left 0.36s cubic-bezier(0.4, 0, 0.2, 1),
+    top 0.36s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.36s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.36s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Halaman sudah sampai bagian kontak: tidak ada menu yang sedang dibuka. */
+.gn-efek.gn-padam::after { animation: gn-padam 0.26s ease both; }
+@keyframes gn-padam {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(0.6); opacity: 0; }
+}
 
 /* <svg> tanpa ukuran akan memesan 300×150px. Dibuat 0 dan diangkat keluar alur
    — bukan display:none, karena sebagian peramban berhenti menemukan filter
@@ -436,10 +457,15 @@ nav.scrolled .lang-switch button { padding: 7px 10px; font-size: 0.7rem; }
 /* Pil tetap berpindah, hanya tanpa dientak — letupannya sendiri sudah
    dibatalkan dari sisi JS. */
 @media (prefers-reduced-motion: reduce) {
+  .gn-efek.gn-luncur { transition: none; }
   .gn-efek.gn-nyala::after {
     animation: none;
     transform: scale(1);
     opacity: 1;
+  }
+  .gn-efek.gn-padam::after {
+    animation: none;
+    opacity: 0;
   }
 }
 

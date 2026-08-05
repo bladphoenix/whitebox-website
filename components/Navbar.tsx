@@ -85,6 +85,7 @@ export default function Navbar() {
                 { label: t.nav.testimonials, href: '#testimoni' },
               ]}
               cta={<a href="#kontak" className="nav-cta">{t.nav.cta}</a>}
+              akhir="#kontak"
             />
 
             <div className="lang-switch" role="group" aria-label="Language / Bahasa">
