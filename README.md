@@ -60,6 +60,9 @@ node scripts/admin-password.mjs "kata sandi kamu"
 # salin dua baris keluarannya ke .env.local
 ```
 
+Selengkapnya soal panel — termasuk cara mengganti kata sandi di produksi —
+ada di [Panel admin](#panel-admin).
+
 ## Isi situs
 
 **Isi situs tidak lagi ditulis di dalam berkas komponen.** Semuanya —
@@ -85,21 +88,87 @@ mengubah apa pun begitu berkas JSON-nya sudah terbentuk — gunakan panel.
 Setiap penyimpanan menulis lewat berkas sementara lalu `rename` (atomik) dan
 menyalin versi sebelumnya ke `data/backups/`; 30 cadangan terakhir disimpan.
 
-### Panel `/admin`
+## Panel admin
 
-Tujuh tab: Hero, Layanan, Portofolio, Harga, Alur Kerja, Testimoni, Kontak.
-Setiap teks punya kolom Indonesia dan Inggris bersebelahan — sisi Inggris boleh
-dikosongkan, situs akan memakai teks Indonesia.
+Alamat: <https://whitebox.asia/admin> (lokal: `http://localhost:3000/admin`).
+Halamannya ber-`noindex` dan tidak ditautkan dari mana pun di situs.
 
-Daftar (layanan, proyek, kartu harga, langkah, testimoni) bisa ditambah,
-diurutkan, dan dihapus. Testimoni bisa **disembunyikan** tanpa dihapus.
+### Yang bisa disunting
+
+Tujuh tab: **Hero · Layanan · Portofolio · Harga · Alur Kerja · Testimoni ·
+Kontak** — termasuk judul dan subjudul tiap section.
+
+- Setiap teks punya kolom Indonesia dan Inggris bersebelahan. Sisi Inggris
+  boleh dikosongkan; situs akan memakai teks Indonesia.
+- Daftar (layanan, proyek, kartu harga, langkah alur, testimoni) bisa
+  ditambah, diurutkan naik/turun, dan dihapus.
+- Testimoni bisa **disembunyikan** tanpa dihapus — tetap tersimpan di JSON.
+- Kolom gambar (hero & portofolio) menerima URL tempel, dengan pratinjau
+  langsung. URL dari host di luar `next.config.mjs` tetap tampil, hanya
+  dilewatkan tanpa pengoptimalan gambar Next.
+
+Tombol **Simpan** baru hidup kalau ada yang berubah, dan menutup tab dengan
+perubahan yang belum disimpan akan dikonfirmasi dulu oleh browser.
 
 Halaman utama memakai ISR; panel memanggil `revalidatePath('/')` setiap
 menyimpan, jadi perubahan langsung terlihat tanpa build ulang.
 
-Keamanan: satu kata sandi (hash scrypt di env), sesi lewat cookie HttpOnly
-bertanda tangan HMAC selama 8 jam, perbandingan `timingSafeEqual`, dan login
-dikunci 15 menit setelah 5 kali gagal per IP.
+### Menyetel kata sandi pertama kali
+
+Panel tidak punya halaman pendaftaran — kata sandinya disetel dari baris
+perintah. Selama env-nya belum ada, `/admin` hanya menampilkan
+"Panel belum disetel" dan tidak bisa dimasuki siapa pun.
+
+```bash
+ssh root@145.79.15.238
+cd /var/www/whitebox.asia/whitebox-nextjs
+
+node scripts/admin-password.mjs "kata sandi kamu"
+# keluarannya dua baris: ADMIN_PASSWORD_HASH dan ADMIN_SESSION_SECRET
+# salin keduanya ke .env.local
+
+chmod 600 .env.local
+pm2 restart whitebox-app --update-env
+```
+
+Skrip menolak kata sandi di bawah 10 karakter. Yang tersimpan hanya hash
+scrypt-nya — kata sandinya sendiri tidak pernah ditulis ke mana pun.
+
+### Mengganti kata sandi
+
+Sama persis dengan di atas: jalankan skripnya dengan kata sandi baru, lalu
+timpa `.env.local`, lalu restart pm2. Yang perlu diputuskan cuma satu hal —
+mau ikut memutus sesi yang sedang berjalan atau tidak:
+
+| Yang disalin ke `.env.local` | Akibatnya |
+| --- | --- |
+| Hanya baris `ADMIN_PASSWORD_HASH` | Kata sandi berganti, sesi yang sedang aktif **tetap hidup** sampai 8 jam |
+| Kedua barisnya | Kata sandi berganti dan **semua sesi langsung gugur** — pakai ini kalau curiga sandi lama bocor |
+
+Perubahan baru berlaku setelah `pm2 restart whitebox-app --update-env`.
+Tanpa `--update-env`, pm2 memakai env lama dan kata sandi baru akan terus
+ditolak.
+
+### Kalau lupa kata sandi
+
+Tidak ada pemulihan, dan memang tidak perlu — cukup setel yang baru dengan
+langkah di atas. Tidak ada data yang hilang: isi situs disimpan terpisah di
+`data/content.json`, bukan di dalam `.env.local`.
+
+Kalau salah memasukkan sandi 5 kali, login dari IP itu terkunci 15 menit.
+Kuncinya disimpan di memori proses, jadi `pm2 restart whitebox-app`
+langsung membukanya lagi.
+
+### Keamanan
+
+- Kata sandi disimpan sebagai hash **scrypt** (N=16384, r=8, p=1) dengan
+  salt acak per pemasangan; perbandingannya memakai `timingSafeEqual`.
+- Sesi berupa cookie **HttpOnly + SameSite=Lax** yang ditandatangani
+  HMAC-SHA256, berumur 8 jam. Bendera `Secure` menyala di produksi (mati saat
+  `npm run dev` supaya panel tetap bisa dipakai lewat `http://localhost`).
+- Login dibatasi 5 percobaan per IP per 15 menit.
+- Semua endpoint di `/api/admin/` menolak permintaan tanpa sesi yang sah
+  dengan HTTP 401.
 
 ## Variabel lingkungan
 
