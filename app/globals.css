@@ -679,26 +679,53 @@ section { position: relative; z-index: 2; transition: background 0.4s; }
 .service-card h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; color: var(--text); }
 .service-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; font-weight: 300; }
 
-/* ─── PORTFOLIO (PROYEK KLIEN) — CAROUSEL ─ */
+/* ─── PORTFOLIO (PROYEK KLIEN) — DUA BARIS BERJALAN ─ */
 #portofolio { padding: 100px 24px; background: var(--surface); }
 
-.proj-slider { position: relative; margin-top: 8px; }
-.proj-track {
+/* Barisnya menembus padding section supaya melebar penuh dari tepi ke tepi
+   layar — kalau berhenti di 1200px, kartunya terlihat terpotong rapi di
+   tempat yang sama setiap kali dan jalannya jadi terasa seperti carousel. */
+.pm {
+  margin: 8px calc(var(--wrap-pad) * -1) 0;
   display: flex;
-  gap: 28px;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pm-row {
+  --pm-w: 340px;    /* lebar satu kartu */
+  --pm-gap: 28px;
+  position: relative;
+  overflow: hidden;
+  /* Padding tegak memberi ruang untuk kartu yang terangkat saat hover;
+     overflow memotong di tepi kotak padding, bukan kotak isi. */
+  padding: 20px 0;
+  /* Tepi kiri-kanan dilembutkan lewat mask, bukan gradien warna yang
+     ditumpuk di atasnya: gradien menuju `transparent` melewati hitam
+     transparan di sebagian mesin dan meninggalkan pita kotor. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 100px, #000 calc(100% - 100px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 100px, #000 calc(100% - 100px), transparent 100%);
+}
+
+.pm-track { display: flex; width: max-content; will-change: transform; }
+.pm-grup { display: flex; flex: none; }
+
+/* Jarak antar kartu memakai margin, bukan gap: lebar satu grup harus sudah
+   termasuk jarak sesudah kartu terakhirnya, kalau tidak sambungan antar
+   ulangan akan terlihat lebih rapat daripada jarak lainnya. */
+.pm-row .proj-card { flex: 0 0 var(--pm-w); width: var(--pm-w); margin-right: var(--pm-gap); }
+
+/* Pengguna dengan "reduce motion": barisnya diam, digeser sendiri. */
+.pm-row.manual {
   overflow-x: auto;
-  overflow-y: hidden;
   scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  padding: 18px 2px 30px;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.proj-track::-webkit-scrollbar { display: none; }
+.pm-row.manual::-webkit-scrollbar { display: none; }
+.pm-row.manual .proj-card { scroll-snap-align: center; }
 
 .proj-card {
-  flex: 0 0 calc((100% - 56px) / 3);   /* 3 kartu terlihat di desktop (2 gap × 28px) */
-  scroll-snap-align: start;
   display: flex; flex-direction: column;
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -780,43 +807,6 @@ section { position: relative; z-index: 2; transition: background 0.4s; }
 }
 .proj-visit i { font-size: 0.7rem; }
 .proj-card:hover .proj-visit { color: var(--accent); gap: 9px; }
-
-/* Panah navigasi carousel */
-.proj-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 54px; height: 54px;
-  border-radius: 50%;
-  border: none;
-  background: #ffffff;
-  color: #111827;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.2rem;
-  cursor: pointer;
-  z-index: 5;
-  /* cincin border putih → abu-abu → hitam biar tegas di light & dark mode */
-  box-shadow:
-    0 0 0 2px #ffffff,
-    0 0 0 4px #9ca3af,
-    0 0 0 6px #0b0f17,
-    0 10px 24px rgba(0,0,0,0.45);
-  transition: opacity 0.25s, background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
-}
-.proj-arrow:hover:not([aria-disabled="true"]) {
-  background: #111827;
-  color: #ffffff;
-  transform: translateY(-50%) scale(1.12);
-  /* hover: warna terbalik (hitam → abu → putih) */
-  box-shadow:
-    0 0 0 2px #0b0f17,
-    0 0 0 4px #9ca3af,
-    0 0 0 6px #ffffff,
-    0 12px 30px rgba(0,0,0,0.5);
-}
-.proj-arrow[aria-disabled="true"] { opacity: 0; pointer-events: none; }
-.proj-arrow-prev { left: -18px; }
-.proj-arrow-next { right: -18px; }
 
 /* ─── LIGHTBOX (POPUP GAMBAR PENUH) ───── */
 .lightbox-overlay {
@@ -1203,7 +1193,7 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); background: va
 /* ─── REDUCED MOTION (aksesibilitas) ──── */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .proj-track, .testi-track { scroll-behavior: auto; }
+  .testi-track { scroll-behavior: auto; }
   .bg-mesh::before, .bg-mesh::after,
   .marquee-track { animation: none !important; }
   .reveal { transition: none !important; }
@@ -1213,7 +1203,7 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); background: va
 @media (max-width: 1024px) {
   .services-grid { grid-template-columns: repeat(2, 1fr); }
   .pricing-grid { grid-template-columns: 1fr 1fr; }
-  .proj-card { flex-basis: calc((100% - 28px) / 2); } /* 2 kartu di tablet */
+  .pm-row { --pm-w: 300px; }
   .testi-card { flex-basis: calc((100% - 24px) / 2); } /* 2 kartu di tablet */
 }
 
@@ -1246,8 +1236,16 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); background: va
      unduhan 10 cuplikan layarnya — hemat ~300 KB di jaringan seluler. */
   .gm { display: none; }
   .pricing-grid { grid-template-columns: 1fr; }
-  .proj-card { flex-basis: 86%; }     /* 1 kartu + sedikit intip kartu berikutnya */
-  .proj-arrow { display: none; }       /* di HP cukup geser/swipe */
+  .pm { gap: 16px; }
+  .pm-row {
+    --pm-w: 250px;
+    --pm-gap: 18px;
+    padding: 14px 0;
+    /* pelunakan tepi ikut menyusut, kalau tidak hampir separuh layar
+       ikut meredup di HP */
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+  }
   .pricing-row2 { grid-template-columns: 1fr; }
 
   .workflow-steps { grid-template-columns: 1fr; gap: 40px; }
