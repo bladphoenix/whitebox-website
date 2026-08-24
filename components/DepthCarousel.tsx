@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
-import { bisaDioptimalkan } from '@/lib/content'
+import { bisaDioptimalkan, sumberUnsplash } from '@/lib/content'
 
 /**
  * Korsel bertumpuk dengan kedalaman. Diadaptasi dari React Bits
@@ -338,7 +338,11 @@ export default function DepthCarousel({
           >
             <Image
               className="dc-gambar"
-              src={s.gambar}
+              /* Berkas hulu diminta 4× ukuran kartu DAN senisbah dengannya, jadi
+                 tidak ada piksel yang terbuang di sisi yang dipotong cover.
+                 next/image tetap yang menentukan mana yang dikirim ke pengunjung
+                 lewat `sizes`. */
+              src={sumberUnsplash(s.gambar, lebarKartu * 4, tinggiKartu * 4)}
               alt={s.alt ?? ''}
               width={lebarKartu * 2}
               height={tinggiKartu * 2}

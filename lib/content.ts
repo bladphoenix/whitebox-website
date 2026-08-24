@@ -148,6 +148,41 @@ export function bisaDioptimalkan(url: string): boolean {
   }
 }
 
+const HOST_UNSPLASH = ['images.unsplash.com', 'plus.unsplash.com']
+
+/**
+ * Menyiapkan URL Unsplash untuk sebuah kartu bergambar. Dua hal diperbaiki
+ * sekaligus, dan keduanya penyebab gambar terlihat buram:
+ *
+ * 1. LEBAR. Tautan yang disalin dari situs Unsplash membawa lebar pratinjaunya
+ *    (?w=387). next/image tidak pernah memperbesar apa pun, jadi berapa pun
+ *    lebar yang diminta peramban, yang keluar mentok selebar berkas asalnya.
+ *    Di layar retina — yang butuh dua kali lipat ukuran tampil — hasilnya
+ *    ditarik molor.
+ * 2. NISBAH. Foto lanskap 3:2 yang dipasang di kartu tegak dipotong kiri-kanan
+ *    oleh `object-fit: cover`. Yang tersisa hanya sepertiga lebar berkasnya,
+ *    dan justru potongan itu yang harus mengisi seluruh tinggi kartu — berkas
+ *    750×500 pun tetap kurang tinggi untuk kartu 500px di layar retina.
+ *    Potongannya diminta langsung ke Unsplash dengan nisbah kartunya, jadi
+ *    tidak ada piksel yang terbuang di sisi yang dipotong. Titik potongnya
+ *    sama-sama di tengah, jadi bingkai fotonya tidak berubah.
+ *
+ * Ukuran yang benar-benar dikirim ke pengunjung tetap ditentukan `sizes`;
+ * yang membesar hanya pengambilan di sisi server, sekali, lalu disimpan Next.
+ */
+export function sumberUnsplash(url: string, lebar: number, tinggi: number): string {
+  try {
+    const u = new URL(url)
+    if (!HOST_UNSPLASH.includes(u.hostname)) return url
+    u.searchParams.set('w', String(Math.round(lebar)))
+    u.searchParams.set('h', String(Math.round(tinggi)))
+    u.searchParams.set('fit', 'crop')
+    return u.toString()
+  } catch {
+    return url
+  }
+}
+
 export function waHref(nomor: string): string {
   return `https://wa.me/${nomor.replace(/[^0-9]/g, '')}`
 }
