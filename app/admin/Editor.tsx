@@ -11,6 +11,7 @@ import type {
   WorkflowStep,
 } from '@/lib/content'
 import { Baris, Centang, Dwi, TambahBaris, Teks, Warna, geser } from './fields'
+import Tema from './Tema'
 
 type Tab = 'hero' | 'layanan' | 'portofolio' | 'harga' | 'alur' | 'testimoni' | 'kontak'
 
@@ -115,6 +116,7 @@ export default function Editor({ awal }: { awal: Content }) {
           <button type="button" className="a-btn utama" onClick={kirim} disabled={!kotor || simpan}>
             {simpan ? 'Menyimpan…' : 'Simpan'}
           </button>
+          <Tema />
           <button type="button" className="a-btn" onClick={keluar}>
             Keluar
           </button>

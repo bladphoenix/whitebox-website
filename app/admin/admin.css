@@ -4,7 +4,18 @@
    mendefinisikan palet sendiri. Semua kelas berawalan a- supaya tidak
    pernah bertabrakan dengan kelas halaman depan. */
 
+/* Panel bisa gelap atau terang. Palet dasarnya ikut variabel situs di
+   globals.css; yang tidak punya padanan di sana — warna status dan bayangan —
+   didefinisikan di sini untuk kedua tema. Pemasangnya ada di Tema.tsx: di
+   halaman ini Navbar situs tidak dirender, jadi tidak ada yang membaca
+   pilihan tema kalau tidak disediakan sendiri. */
 .a-root {
+  --a-ok: #34d399;
+  --a-bahaya: #fca5a5;
+  --a-bahaya-latar: rgba(239, 68, 68, 0.13);
+  --a-bahaya-tepi: rgba(239, 68, 68, 0.35);
+  --a-bayang: 0 24px 60px rgba(0, 0, 0, 0.35);
+
   position: relative;
   z-index: 5;
   min-height: 100vh;
@@ -17,6 +28,7 @@
 
 /* ── Layar masuk ─────────────────────────────────────────────────── */
 .a-masuk {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -30,7 +42,7 @@
   border: 1px solid var(--border);
   border-radius: 18px;
   padding: 32px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--a-bayang);
 }
 .a-masuk-kotak h1 {
   font-family: var(--font-playfair), serif;
@@ -46,9 +58,9 @@
   margin-top: 14px;
   padding: 10px 12px;
   border-radius: 10px;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  color: #fca5a5;
+  background: var(--a-bahaya-latar);
+  border: 1px solid var(--a-bahaya-tepi);
+  color: var(--a-bahaya);
 }
 .a-kode {
   margin-top: 12px;
@@ -91,8 +103,8 @@
 .a-top-kanan { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
 .a-pesan { font-size: 13px; color: var(--text-muted); }
-.a-pesan.ok { color: #34d399; }
-.a-pesan.salah { color: #fca5a5; }
+.a-pesan.ok { color: var(--a-ok); }
+.a-pesan.salah { color: var(--a-bahaya); }
 
 .a-btn {
   padding: 9px 18px;
@@ -317,7 +329,7 @@
 }
 .a-baris-alat button:hover { background: var(--surface2); color: var(--text); }
 .a-baris-alat .a-hapus:hover,
-.a-fitur-baris .a-hapus:hover { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+.a-fitur-baris .a-hapus:hover { background: var(--a-bahaya-latar); color: var(--a-bahaya); }
 .a-baris-isi { padding: 4px 14px 14px; border-top: 1px solid var(--border); }
 
 .a-tambah {
@@ -369,3 +381,39 @@
   .a-tabs { top: 0; position: static; }
   .a-top { position: static; }
 }
+
+/* ── Tema terang ─────────────────────────────────────────────────── */
+/* Hijau dan merah muda pucat di atas dibuat untuk latar gelap; di atas
+   kertas putih keduanya nyaris tidak terbaca. */
+[data-theme='light'] .a-root {
+  --a-ok: #047857;
+  --a-bahaya: #b91c1c;
+  --a-bahaya-latar: rgba(220, 38, 38, 0.08);
+  --a-bahaya-tepi: rgba(220, 38, 38, 0.3);
+  --a-bayang: 0 24px 60px rgba(15, 23, 42, 0.12);
+}
+
+/* Di tema gelap, isian memakai var(--bg) yang lebih GELAP daripada kartunya,
+   jadi terlihat terbenam. Di tema terang urutannya terbalik: --bg (#f8fafc)
+   justru lebih terang daripada kartu putihnya, dan kotaknya jadi hilang.
+   Dipakai --surface2 supaya hubungannya sama seperti di tema gelap. */
+[data-theme='light'] .a-field input[type='text'],
+[data-theme='light'] .a-field input[type='password'],
+[data-theme='light'] .a-field textarea,
+[data-theme='light'] .a-field select,
+[data-theme='light'] .a-fitur-baris input,
+[data-theme='light'] .a-baris,
+[data-theme='light'] .a-warna-row input[type='color'],
+[data-theme='light'] .a-ikon-row > i { background: var(--surface2); }
+
+/* ── Tombol ganti tema ───────────────────────────────────────────── */
+/* Menumpang .a-btn, jadi tinggi dan gayanya tidak bisa melenceng dari tombol
+   di sebelahnya. Yang diubah cuma padding mendatarnya supaya jadi persegi. */
+.a-tema { padding: 9px 11px; }
+/* Lebar ikon dipatok: matahari dan bulan tidak sama lebar, dan tanpa ini
+   tombolnya berubah ukuran tiap kali temanya ditukar. */
+.a-tema i { display: inline-block; width: 15px; text-align: center; font-size: 14px; }
+.a-tema:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+
+/* Di layar masuk tidak ada bilah atas, jadi tombolnya menempel di pojok. */
+.a-masuk-tema { position: absolute; top: 18px; right: 18px; }

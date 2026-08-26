@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './admin.css'
+import { SKRIP_TEMA } from './Tema'
 
 export const metadata: Metadata = {
   title: 'Panel Isi Situs — Whitebox.asia',
@@ -8,5 +9,13 @@ export const metadata: Metadata = {
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <div className="a-root">{children}</div>
+  return (
+    <>
+      {/* Dijalankan sebelum isi panel selesai diurai, jadi tema tersimpan
+          sudah terpasang sebelum ada yang tergambar. Tata letak root menulis
+          data-theme="dark" di <html>; nilainya ditimpa di sini. */}
+      <script dangerouslySetInnerHTML={{ __html: SKRIP_TEMA }} />
+      <div className="a-root">{children}</div>
+    </>
+  )
 }

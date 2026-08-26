@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Tema from './Tema'
 
 export default function Login() {
   const [sandi, setSandi] = useState('')
@@ -34,6 +35,9 @@ export default function Login() {
 
   return (
     <div className="a-masuk">
+      <div className="a-masuk-tema">
+        <Tema />
+      </div>
       <form className="a-masuk-kotak" onSubmit={kirim}>
         <h1>Panel Isi Situs</h1>
         <p>Whitebox.asia</p>
